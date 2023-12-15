@@ -363,11 +363,6 @@ void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, Teste
 
 void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  // Additional delay beyond the normal artificial delay we insert before replying.
-  // Just doing this to slow things down and make them a bit easier to follow when
-  // ECU parameters are being updated.
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
   if (inbuf[7] == 0x00) // Req ID code
   {
     outbuf[2] = 16;
