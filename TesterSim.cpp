@@ -259,7 +259,7 @@ bool TesterSim::listen()
   return status;
 }
 
-void TesterSim::process01TabletInfo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process01TabletInfo(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   printf("Request for Tester info\n");
   outbuf[1] = 0;
@@ -284,7 +284,7 @@ void TesterSim::process01TabletInfo(const uint8_t* inbuf, uint8_t* outbuf, Teste
   outbuf[24] = 212; // serial num lo
 }
 
-void TesterSim::process02SerialNo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process02SerialNo(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   printf("Request for Tester serial no.\n");
   outbuf[2] = 8;
@@ -292,14 +292,14 @@ void TesterSim::process02SerialNo(const uint8_t* inbuf, uint8_t* outbuf, TesterS
   outbuf[8] = 212; // lo byte
 }
 
-void TesterSim::process09(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process09(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   outbuf[1] = 0;
   outbuf[2] = 7;
   outbuf[7] = 0x10;
 }
 
-void TesterSim::process0AWorkshopData(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process0AWorkshopData(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   printf("Request for workshop data\n");
   outbuf[2] = 0x76;
@@ -400,7 +400,7 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
   }
 }
 
-void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   std::string dstring((char*)(inbuf + 14), inbuf[2] - 13);
   printf("Display string on Tester screen: %s\n", dstring.c_str());
@@ -428,7 +428,7 @@ void TesterSim::process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
   }
 }
 
-void TesterSim::process1ECloseFile(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process1ECloseFile(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
   sim->m_curFileContents = nullptr;
   printf("Close file (which is currently %s)\n", sim->m_curFile.c_str());
@@ -525,7 +525,7 @@ void TesterSim::process24ReadFromFile(const uint8_t* inbuf, uint8_t* outbuf, Tes
   }
 }
 
-void TesterSim::process25ChecksumFile(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process25ChecksumFile(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
   printf("Request for checksum verification of file\n");
   outbuf[1] = 0;
@@ -585,7 +585,7 @@ void TesterSim::process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, 
   }
 }
 
-void TesterSim::process3AGetDateTime(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process3AGetDateTime(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   printf("Request for Tester date/time\n");
   outbuf[2] = 0x0d;
@@ -598,7 +598,7 @@ void TesterSim::process3AGetDateTime(const uint8_t* inbuf, uint8_t* outbuf, Test
   outbuf[13] = 0x06;
 }
 
-void TesterSim::process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)
 {
   printf("Command to erase flash on Tester\n");
   outbuf[2] = 8;
