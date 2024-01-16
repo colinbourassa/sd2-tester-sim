@@ -1,5 +1,6 @@
 #include "simmain.h"
 #include <QMessageBox>
+#include <QString>
 #include "ui_simmain.h"
 
 SimMain::SimMain(QWidget *parent)
@@ -22,13 +23,15 @@ void SimMain::listenOnSock(SimMain* sim)
 
 void SimMain::on_connectButton_clicked()
 {
-  if (m_sim.connectToSocket(std::string("/home/cmb/vbox-unix-domain-socket-com-port")))
+  const QString domainSockName = ui->domainSocketLine->text();
+  if (m_sim.connectToSocket(domainSockName.toStdString()))
   {
     ui->connectButton->setEnabled(false);
   }
   else
   {
-    QMessageBox::warning(this, "Error", "Could not connect");
+    QMessageBox::warning(this, "Error",
+      QString("Could not connect to domain socket '%1'").arg(domainSockName));
   }
 }
 
@@ -44,4 +47,3 @@ void SimMain::on_setRAMButton_clicked()
   uint8_t val = ui->valBox->text().toUInt(nullptr, 16);
   m_sim.setRAMLoc(addr, val);
 }
-
