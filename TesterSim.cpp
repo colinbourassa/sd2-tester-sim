@@ -27,7 +27,6 @@ std::map<uint8_t,const char*> TesterSim::s_outColors =
 };
 
 // TODO: Determine what response (if any?) is expected from 0x11 (do slow init).
-// TODO: Begin to implement responses for KWP71 and FIAT9141
 
 std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> TesterSim::s_commandProcs =
 {
@@ -50,6 +49,23 @@ std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> Tester
   { 0x2B, TesterSim::process2BGetNextDirEntry },
   { 0x3A, TesterSim::process3AGetDateTime },
   { 0x3D, TesterSim::process3DEraseFlash }
+};
+
+std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
+{
+  {  83, ProtocolType::FIAT9141 },
+  {  89, ProtocolType::FIAT9141 },
+  {  90, ProtocolType::KWP71 },
+  { 100, ProtocolType::KWP71 },
+  { 119, ProtocolType::KWP71 },
+  { 121, ProtocolType::KWP71 },
+  { 145, ProtocolType::KWP71 },
+  { 146, ProtocolType::KWP71 },
+  { 147, ProtocolType::KWP71 },
+  { 151, ProtocolType::Marelli1AF },
+  { 162, ProtocolType::KWP71 },
+  { 163, ProtocolType::KWP71 },
+  { 164, ProtocolType::KWP71 }
 };
 
 std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
@@ -447,10 +463,27 @@ void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, Teste
 
 void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  // TODO: The incoming command will be in whatever format the ECU is expecting,
-  // so this routine will need to change its behavior (and the format of its
-  // replay) depending on the ECU module currently in use.
+  const int currentECU = sim->m_currentECUID;
+  if (s_protocols.count(currentECU))
+  {
+    const ProtocolType proto = s_protocols.at(currentECU);
+    if (proto == ProtocolType::KWP71)
+    {
+      processKWP71CommandToECU(inbuf, outbuf, sim);
+    }
+    else if (proto == ProtocolType::FIAT9141)
+    {
+      processFIAT9141CommandToECU(inbuf, outbuf, sim);
+    }
+    else if (proto == ProtocolType::Marelli1AF)
+    {
+      processMarelli1AFCommandToECU(inbuf, outbuf, sim);
+    }
+  }
+}
 
+void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+{
   if (inbuf[7] == 0x00) // Req ID code
   {
     outbuf[2] = 16;
@@ -486,6 +519,16 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
     outbuf[2] = 7;
     outbuf[7] = 1;
   }
+}
+
+void TesterSim::processFIAT9141CommandToECU(const uint8_t* /*inbuf*/, uint8_t* /*outbuf*/, TesterSim* /*sim*/)
+{
+
+}
+
+void TesterSim::processMarelli1AFCommandToECU(const uint8_t* /*inbuf*/, uint8_t* /*outbuf*/, TesterSim* /*sim*/)
+{
+
 }
 
 void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)

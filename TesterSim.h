@@ -6,6 +6,13 @@
 
 constexpr int CHKSUM_BUF_SIZE = 110;
 
+enum class ProtocolType
+{
+  KWP71,
+  FIAT9141,
+  Marelli1AF
+};
+
 class TesterSim
 {
 public:
@@ -42,6 +49,7 @@ private:
   static std::map<uint8_t,const char*> s_outColors;
   static std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> s_commandProcs;
   static std::unordered_map<int,std::vector<uint8_t>> s_isoBytes;
+  static std::unordered_map<int,ProtocolType> s_protocols;
 
   static void process01TabletInfo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process02SerialNo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
@@ -62,5 +70,9 @@ private:
   static void process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process3AGetDateTime(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
+
+  static void processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim);
+  static void processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim);
+  static void processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim);
 };
 
