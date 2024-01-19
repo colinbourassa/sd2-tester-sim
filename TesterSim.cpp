@@ -9,6 +9,8 @@
 #include <thread>
 #include "TesterSim.h"
 
+#include <QFileInfo>
+
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
 #define YEL   "\x1B[33m"
@@ -51,112 +53,6 @@ std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> Tester
   { 0x3D, TesterSim::process3DEraseFlash }
 };
 
-std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
-{
-  {  83, ProtocolType::FIAT9141 },
-  {  89, ProtocolType::FIAT9141 },
-  {  90, ProtocolType::KWP71 },
-  { 100, ProtocolType::KWP71 },
-  { 119, ProtocolType::KWP71 },
-  { 121, ProtocolType::KWP71 },
-  { 145, ProtocolType::KWP71 },
-  { 146, ProtocolType::KWP71 },
-  { 147, ProtocolType::KWP71 },
-  { 151, ProtocolType::Marelli1AF },
-  { 162, ProtocolType::KWP71 },
-  { 163, ProtocolType::KWP71 },
-  { 164, ProtocolType::KWP71 }
-};
-
-std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
-{
-  {51, {0x55, 0xCD, 0x83, 0x01, 0x98, 0x3E} },
-  {51, {0x55, 0x16, 0x07, 0x01, 0x98, 0x0B} },
-  {52, {0x55, 0x97, 0x07, 0x01, 0x98, 0x8C} },
-  {53, {0x55, 0xD6, 0x83, 0x01, 0x15, 0xC4} },
-  {54, {0x55, 0x4A, 0x83, 0x01, 0x98, 0x3B} },
-  {55, {0x55, 0x10, 0x07, 0x01, 0x98, 0x85} },
-  {57, {0x55, 0xEF, 0x8F} },
-  {58, {0x55, 0x52, 0x83, 0x01, 0x15, 0x40} },
-  {66, {0x55, 0x92, 0x07, 0x01, 0x19, 0x08} },
-  {68, {0xE9, 0x8F} },
-  {69, {0x55, 0x4F, 0x83, 0x01, 0x15, 0x3D} },
-  {71, {0x55, 0x91, 0x07, 0x01, 0x19, 0x07} },
-  {72, {0x55, 0xAB, 0x86, 0x01, 0x01, 0x08} },
-  {74, {0x55, 0xCD, 0x83, 0x01, 0x98, 0x3E} },
-  {76, {0x55, 0x4A, 0x83, 0x01, 0x19, 0xBC} },
-  {77, {0x55, 0x10, 0x07, 0x01, 0x19, 0x86} },
-  {79, {0x55, 0xD6, 0x83, 0x01, 0x15, 0xC4} },
-  {80, {0x55, 0x13, 0x07, 0x01, 0x80, 0x70} },
-  {81, {0x55, 0xEF, 0x8F} },
-  {83, {0x55, 0x4C, 0x83, 0x04, 0x13, 0x3B} },
-  {84, {0x55, 0xD6, 0x83, 0x01, 0x15, 0xC4} },
-  {85, {0x55, 0x4A, 0x83, 0x01, 0x15, 0x38} },
-  {86, {0x55, 0x0E, 0x07, 0x01, 0x15, 0x80} },
-  {88, {0x55, 0x49, 0x83, 0x01, 0x15, 0x37} },
-  {89, {0x55, 0x4C, 0x83, 0x04, 0x13, 0x3B} },
-  {90, {0x55, 0x00, 0x81} },
-  {91, {0x55, 0x58, 0x83, 0x01, 0x15, 0x46} },
-  {92, {0x55, 0x58, 0x83, 0x01, 0x98, 0x49} },
-  {93, {0x55, 0x4F, 0x83, 0x01, 0x15, 0x3D} },
-  {95, {0x55, 0xD0, 0x83, 0x01, 0x94, 0x3D} },
-  {96, {0x55, 0x54, 0x83, 0x01, 0x15, 0xC2} },
-  {97, {0x55, 0x58, 0x83, 0x02, 0x16, 0xC8} },
-  {98, {0x55, 0xEF, 0x8F} },
-  {100, {0x55, 0x00, 0x81} },
-  {102, {0x55, 0x4F, 0x83, 0x01, 0x98, 0x40} },
-  {103, {0x55, 0x8F, 0x07, 0x01, 0x15, 0x01} },
-  {105, {0x55, 0x15, 0x07, 0x01, 0x16, 0x08} },
-  {106, {0x55, 0x4A, 0x83, 0x02, 0x16, 0xB4} },
-  {107, {0x55, 0xD6, 0x83, 0x01, 0x15, 0xC4} },
-  {108, {0x55, 0x49, 0x83, 0x01, 0x92, 0x34} },
-  {109, {0x55, 0x92, 0x07, 0x02, 0x16, 0x86} },
-  {110, {0x55, 0x4A, 0x83, 0x86, 0x92, 0xBA} },
-  {111, {0x55, 0xD3, 0x83, 0x01, 0x15, 0xC1} },
-  {113, {0x55, 0x58, 0x83, 0x02, 0x98, 0x4A} },
-  {114, {0x55, 0x91, 0x07, 0xD8, 0xEE, 0x00} },
-  {115, {0x55, 0xD3, 0x83, 0x01, 0x15, 0xC1} },
-  {116, {0x55, 0x4A, 0x83, 0x02, 0x98, 0xBC} },
-  {117, {0x55, 0x4A, 0x83, 0x83, 0x98, 0x3D} },
-  {118, {0x55, 0x54, 0x83, 0x01, 0x15, 0xC2} },
-  {119, {0x55, 0x4C, 0x83, 0x04, 0x13, 0x3B} },
-  {120, {0x55, 0x0E, 0x07, 0x01, 0x15, 0x80} },
-  {121, {0x55, 0x46, 0x83, 0x02, 0x92, 0x32} },
-  {130, {0x55, 0xAB, 0x86, 0x83, 0x01, 0x8A} },
-  {131, {0x55, 0x7F, 0x86, 0x01, 0x97, 0xF2} },
-  {132, {0x55, 0x4A, 0x83, 0x01, 0x01, 0xA4} },
-  {133, {0x55, 0xEF, 0x8F} },
-  {134, {0x55, 0x13, 0x07, 0x01, 0x80, 0x70} },
-  {135, {0x55, 0x92, 0x07, 0x01, 0x01, 0x70} },
-  {136, {0x55, 0x10, 0x07, 0x01, 0x19, 0x86} },
-  {137, {0x55, 0xCE, 0x83, 0x89, 0x13, 0xC2} },
-  {138, {0x55, 0x4F, 0x83, 0x01, 0x15, 0x3D} },
-  {139, {0x55, 0x97, 0x07, 0x01, 0x01, 0x75} },
-  {140, {0x55, 0x98, 0x07, 0x01, 0x01, 0x76} },
-  {141, {0x55, 0xCD, 0x83, 0x01, 0x02, 0xA8} },
-  {142, {0x55, 0x10, 0x07, 0x01, 0x15, 0x02} },
-  {143, {0x55, 0x49, 0x83, 0x8A, 0x13, 0x3E} },
-  {144, {0x55, 0x49, 0x83, 0x83, 0x13, 0x37} },
-  {145, {0x55, 0x00, 0x81} },
-  {146, {0x55, 0x46, 0x83, 0x01, 0x96, 0xB5} },
-  {147, {0x55, 0x46, 0x83, 0x04, 0x92, 0x34} },
-  {151, {0x55, 0x52, 0x83, 0x01, 0x15, 0x40} },
-  {154, {0x55, 0xCD, 0x83, 0x08, 0x13, 0x40} },
-  {157, {0x55, 0xCE, 0x83, 0x89, 0x13, 0xC2} },
-  {158, {0x55, 0x52, 0x83, 0x01, 0x15, 0x40} },
-  {161, {0x55, 0x4A, 0x83, 0x04, 0x13, 0xB9} },
-  {162, {0x55, 0x46, 0x83, 0x01, 0x13, 0x32} },
-  {163, {0x55, 0x46, 0x83, 0x01, 0x89, 0xA8} },
-  {164, {0x55, 0x46, 0x83, 0x02, 0x10, 0xB0} },
-  {168, {0x55, 0x13, 0x07, 0x01, 0x80, 0x70} },
-  {188, {0x55, 0xCD, 0x83, 0x04, 0x83, 0x2C} },
-  {191, {0x55, 0x92, 0x07, 0x02, 0x83, 0x73} },
-  {215, {0x55, 0xCD, 0x83, 0x01, 0x98, 0x3E} },
-  {227, {0x55, 0xCD, 0x83, 0x02, 0x04, 0xAB} },
-  {228, {0x55, 0x13, 0x07, 0x01, 0x80, 0x70} },
-  {231, {0x55, 0xD0, 0x83, 0x02, 0x04, 0xAE} },
-  {232, {0x55, 0xD0, 0x83, 0x14, 0xAD} }
-};
 
 TesterSim::TesterSim()
 {
@@ -246,7 +142,7 @@ bool TesterSim::processBuf(bool print)
   return status;
 }
 
-bool TesterSim::connectToSocket(const std::string& sockPath)
+bool TesterSim::connectToSocket(const QString &sockPath)
 {
   bool status = false;
   struct sockaddr_un addr;
@@ -256,7 +152,7 @@ bool TesterSim::connectToSocket(const std::string& sockPath)
   {
     memset(&addr, 0, sizeof(struct sockaddr_un));
     addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, sockPath.c_str(), sizeof(addr.sun_path) - 1);
+    strncpy(addr.sun_path, sockPath.toStdString().c_str(), sizeof(addr.sun_path) - 1);
 
     if (connect(m_sockFd, (const struct sockaddr*)&addr, sizeof(struct sockaddr_un)) == 0)
     {
@@ -562,24 +458,24 @@ void TesterSim::process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 void TesterSim::process1ECloseFile(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
   sim->m_curFileContents = nullptr;
-  printf("Close file (which is currently %s)\n", sim->m_curFile.c_str());
+  printf("Close file (which is currently %s)\n", sim->m_curFile.toStdString().c_str());
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
 
 void TesterSim::process20OpenFileForWriting(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  const std::string filenameWithPath((char*)(inbuf + 7), inbuf[2] - 6);
-  const size_t lastPathSeparator = filenameWithPath.find_last_of('/');
-  const std::string filenameOnly = (lastPathSeparator == std::string::npos) ?
-    filenameWithPath : filenameWithPath.substr(lastPathSeparator + 1);
-  const std::string dirOnly = filenameWithPath.substr(0, lastPathSeparator);
+  const QString filenameWithPath = QString::fromStdString(std::string((char*)(inbuf + 7), inbuf[2] - 6));
+  const QFileInfo fileinfo(filenameWithPath);
+  const QString filenameOnly = fileinfo.fileName();
+  const QString dirOnly = fileinfo.absolutePath();
 
   sim->m_curDir = dirOnly;
   sim->m_curFile = filenameOnly;
   sim->m_curFileContents = &(sim->m_fileContents[dirOnly][filenameOnly]);
   sim->m_curFileContents->clear(); // only truncate is supported (no append)
-  printf("Open file for writing: %s (in dir %s)\n", sim->m_curFile.c_str(), sim->m_curDir.c_str());
+  printf("Open file for writing: %s (in dir %s)\n",
+    sim->m_curFile.toStdString().c_str(), sim->m_curDir.toStdString().c_str());
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -588,19 +484,20 @@ void TesterSim::process21WriteToFile(const uint8_t* inbuf, uint8_t* outbuf, Test
 {
   const int byteCount = inbuf[2] - 0xb;
   printf("Write %d bytes to file\n", byteCount);
-  std::vector<uint8_t> newBuf(&inbuf[0xb], &inbuf[0xb] + byteCount);
-  sim->m_curFileContents->insert(sim->m_curFileContents->end(), newBuf.begin(), newBuf.end());
+  for (int i = 0; i < byteCount; i++)
+  {
+    sim->m_curFileContents->append(inbuf[0xb + i]);
+  }
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
 
 void TesterSim::process23OpenFileForReading(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  const std::string filenameWithPath((char*)(inbuf + 7), inbuf[2] - 6);
-  const size_t lastPathSeparator = filenameWithPath.find_last_of('/');
-  const std::string filenameOnly = (lastPathSeparator == std::string::npos) ?
-    filenameWithPath : filenameWithPath.substr(lastPathSeparator + 1);
-  const std::string dirOnly = filenameWithPath.substr(0, lastPathSeparator);
+  const QString filenameWithPath = QString::fromStdString(std::string((char*)(inbuf + 7), inbuf[2] - 6));
+  const QFileInfo fileinfo(filenameWithPath);
+  const QString filenameOnly = fileinfo.fileName();
+  const QString dirOnly = fileinfo.absolutePath();
 
   sim->m_curDir = dirOnly;
   sim->m_curFile = filenameOnly;
@@ -608,7 +505,8 @@ void TesterSim::process23OpenFileForReading(const uint8_t* inbuf, uint8_t* outbu
   sim->m_curFileContents = &(sim->m_fileContents[dirOnly][filenameOnly]);
   memset(sim->m_checksumBuf, 0, CHKSUM_BUF_SIZE);
 
-  printf("Open file for reading: %s (in dir %s)\n", sim->m_curFile.c_str(), sim->m_curDir.c_str());
+  printf("Open file for reading: %s (in dir %s)\n",
+    sim->m_curFile.toStdString().c_str(), sim->m_curDir.toStdString().c_str());
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -671,10 +569,10 @@ void TesterSim::process25ChecksumFile(const uint8_t* /*inbuf*/, uint8_t* outbuf,
 
 void TesterSim::process2AChdir(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  const std::string curDir((char*)(inbuf + 7), inbuf[2] - 6);
+  const QString curDir = QString::fromStdString(std::string((char*)(inbuf + 7), inbuf[2] - 6));
   sim->m_curDir = curDir;
   sim->m_curDirIterator = sim->m_fileContents[curDir].begin();
-  printf("Change directory: %s\n", curDir.c_str());
+  printf("Change directory: %s\n", curDir.toStdString().c_str());
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -686,9 +584,9 @@ void TesterSim::process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, 
   if (sim->m_curDirIterator !=
       sim->m_fileContents[sim->m_curDir].end())
   {
-    const std::string filename = sim->m_curDirIterator->first;
-    const uint32_t filesize = sim->m_curDirIterator->second.size();
-    printf(" File: %s, size %u\n", filename.c_str(), filesize);
+    const QString filename = sim->m_curDirIterator.key();
+    const uint32_t filesize = sim->m_curDirIterator.value().size();
+    printf(" File: %s, size %u\n", filename.toStdString().c_str(), filesize);
     const uint8_t truncLen = (filename.length() < 90) ? filename.length() : 90;
     printf(" Truncated length of filename: %d\n", truncLen);
 
@@ -703,8 +601,8 @@ void TesterSim::process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, 
     outbuf[14] = (filesize >> 16) & 0xff;
     outbuf[15] = (filesize >> 8) & 0xff;
     outbuf[16] = filesize & 0xff;
-    strcpy((char*)(outbuf + 17), "AUG-06-1998  13:24:55");
-    strncpy((char*)(outbuf + 38), filename.c_str(), 89);
+    strncpy((char*)(outbuf + 17), "AUG-06-1998  13:24:55", 21);
+    strncpy((char*)(outbuf + 38), filename.toStdString().c_str(), 89);
 
     sim->m_curDirIterator++;
   }
@@ -737,3 +635,12 @@ void TesterSim::process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, Teste
   outbuf[7] = 1;
 }
 
+bool TesterSim::loadState(const QString& filename)
+{
+  return false;
+}
+
+bool TesterSim::saveState(const QString& filename)
+{
+  return false;
+}

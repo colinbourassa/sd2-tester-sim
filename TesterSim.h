@@ -4,6 +4,8 @@
 #include <map>
 #include <functional>
 
+#include <QMap>
+
 constexpr int CHKSUM_BUF_SIZE = 110;
 
 enum class ProtocolType
@@ -17,9 +19,11 @@ class TesterSim
 {
 public:
   TesterSim();
-  bool connectToSocket(const std::string& path);
+  bool connectToSocket(const QString& path);
   bool listen();
   void setRAMLoc(uint16_t addr, uint8_t val);
+  bool loadState(const QString& filename);
+  bool saveState(const QString& filename);
 
 private:
   int m_sockFd = -1;
@@ -27,16 +31,16 @@ private:
   uint8_t m_outbuf[128];
   uint8_t m_checksumBuf[CHKSUM_BUF_SIZE];
   uint8_t m_lastInbuf[128];
-  std::string m_curDir;
-  std::string m_curFile;
+  QString m_curDir;
+  QString m_curFile;
   int m_fileReadPos = 0;
   bool m_applRun[16];
   int m_currentECUID = 0;
   std::unordered_map<uint16_t,uint8_t> m_ramData;
 
-  std::map<std::string,std::map<std::string,std::vector<uint8_t>>> m_fileContents;
-  std::map<std::string,std::vector<uint8_t>>::iterator m_curDirIterator;
-  std::vector<uint8_t>* m_curFileContents = nullptr;
+  QMap<QString,QMap<QString,QVector<quint8>>> m_fileContents;
+  QMap<QString,QVector<quint8>>::Iterator m_curDirIterator;
+  QVector<quint8>* m_curFileContents = nullptr;
 
   bool shouldDisplayPacket(const uint8_t* buf);
   void printPacket(const uint8_t* buf);

@@ -24,7 +24,7 @@ void SimMain::listenOnSock(SimMain* sim)
 void SimMain::on_connectButton_clicked()
 {
   const QString domainSockName = ui->domainSocketLine->text();
-  if (m_sim.connectToSocket(domainSockName.toStdString()))
+  if (m_sim.connectToSocket(domainSockName))
   {
     ui->connectButton->setEnabled(false);
   }
@@ -46,4 +46,20 @@ void SimMain::on_setRAMButton_clicked()
   uint16_t addr = ui->addrBox->text().toUInt(nullptr, 16);
   uint8_t val = ui->valBox->text().toUInt(nullptr, 16);
   m_sim.setRAMLoc(addr, val);
+}
+
+void SimMain::on_loadStateButton_clicked()
+{
+  if (!m_sim.loadState(m_stateFilename))
+  {
+    QMessageBox::warning(this, "Error", QString("Failed to load state from file '%1'").arg(m_stateFilename));
+  }
+}
+
+void SimMain::on_saveStateButton_clicked()
+{
+  if (!m_sim.loadState(m_stateFilename))
+  {
+    QMessageBox::warning(this, "Error", QString("Failed to save state to file '%1'").arg(m_stateFilename));
+  }
 }

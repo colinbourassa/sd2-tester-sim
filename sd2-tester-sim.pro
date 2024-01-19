@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     TesterSim.cpp \
+    TesterSimModuleInfo.cpp \
     main.cpp \
     simmain.cpp
 

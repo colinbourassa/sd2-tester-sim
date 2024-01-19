@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>412</width>
+    <width>613</width>
     <height>341</height>
    </rect>
   </property>
@@ -15,8 +15,15 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0">
-     <widget class="QLineEdit" name="addrBox"/>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLineEdit" name="domainSocketLine">
+      <property name="text">
+       <string>~/vbox-unix-domain-socket-com-port</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0" colspan="4">
+     <widget class="QPlainTextEdit" name="plainTextEdit"/>
     </item>
     <item row="0" column="2">
      <widget class="QPushButton" name="connectButton">
@@ -25,46 +32,53 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="2">
-     <widget class="QPushButton" name="setRAMButton">
-      <property name="text">
-       <string>Set</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Addr:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Val:</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="2">
+     <widget class="QPushButton" name="loadStateButton">
+      <property name="text">
+       <string>Load filesystem state</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
      <widget class="QPushButton" name="startListeningButton">
       <property name="text">
        <string>Start listening</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="valBox"/>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QLineEdit" name="domainSocketLine">
+    <item row="1" column="3">
+     <widget class="QPushButton" name="saveStateButton">
       <property name="text">
-       <string>~/vbox-unix-domain-socket-com-port</string>
+       <string>Save filesystem state</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="0" colspan="3">
-     <widget class="QPlainTextEdit" name="plainTextEdit"/>
+    <item row="3" column="0">
+     <widget class="QLabel" name="addrLabel">
+      <property name="text">
+       <string>Addr:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLineEdit" name="addrBox"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLabel" name="valLabel">
+      <property name="text">
+       <string>Val:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="valBox"/>
+    </item>
+    <item row="4" column="2">
+     <widget class="QPushButton" name="setRAMButton">
+      <property name="text">
+       <string>Set RAM location</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
