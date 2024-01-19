@@ -601,7 +601,7 @@ void TesterSim::process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, 
     outbuf[14] = (filesize >> 16) & 0xff;
     outbuf[15] = (filesize >> 8) & 0xff;
     outbuf[16] = filesize & 0xff;
-    strncpy((char*)(outbuf + 17), "AUG-06-1998  13:24:55", 21);
+    memcpy(outbuf + 17, "AUG-06-1998  13:24:55", 21);
     strncpy((char*)(outbuf + 38), filename.toStdString().c_str(), 89);
 
     sim->m_curDirIterator++;
