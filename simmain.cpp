@@ -58,7 +58,7 @@ void SimMain::on_loadStateButton_clicked()
 
 void SimMain::on_saveStateButton_clicked()
 {
-  if (!m_sim.loadState(m_stateFilename))
+  if (!m_sim.saveState(m_stateFilename))
   {
     QMessageBox::warning(this, "Error", QString("Failed to save state to file '%1'").arg(m_stateFilename));
   }

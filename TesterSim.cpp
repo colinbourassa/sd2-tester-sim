@@ -9,6 +9,8 @@
 #include <thread>
 #include "TesterSim.h"
 
+#include <QFile>
+#include <QDataStream>
 #include <QFileInfo>
 
 #define RED   "\x1B[31m"
@@ -637,10 +639,43 @@ void TesterSim::process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, Teste
 
 bool TesterSim::loadState(const QString& filename)
 {
-  return false;
+  bool status = false;
+  QFile infile(filename);
+
+  if (infile.open(QIODevice::ReadOnly))
+  {
+    QDataStream in(&infile);
+    in >> m_fileContents;
+    infile.close();
+    status = true;
+  }
+
+  printf("Loaded filesystem state:\n");
+  foreach (QString dirname, m_fileContents.keys())
+  {
+    printf(" dir: %s\n", dirname.toStdString().c_str());
+    foreach (QString filename, m_fileContents[dirname].keys())
+    {
+      printf("  file: %s (%d bytes)\n", filename.toStdString().c_str(), m_fileContents[dirname][filename].size());
+    }
+  }
+
+  return status;
 }
 
 bool TesterSim::saveState(const QString& filename)
 {
-  return false;
+  bool status = false;
+  QFile outfile(filename);
+
+  if (outfile.open(QIODevice::WriteOnly))
+  {
+    QDataStream out(&outfile);
+    out << m_fileContents;
+    outfile.close();
+    status = true;
+  }
+
+  return status;
 }
+
