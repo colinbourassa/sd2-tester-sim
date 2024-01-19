@@ -15,7 +15,7 @@ class SimMain : public QMainWindow
   Q_OBJECT
 
 public:
-  SimMain(QWidget *parent = nullptr);
+  SimMain(const QString& domainSockName, QWidget* parent = nullptr);
   ~SimMain();
 
 private slots:

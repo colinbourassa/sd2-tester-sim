@@ -3,11 +3,12 @@
 #include <QString>
 #include "ui_simmain.h"
 
-SimMain::SimMain(QWidget *parent)
+SimMain::SimMain(const QString& domainSockName, QWidget* parent)
   : QMainWindow(parent)
   , ui(new Ui::SimMain)
 {
   ui->setupUi(this);
+  ui->domainSocketLine->setText(domainSockName);
 }
 
 SimMain::~SimMain()
