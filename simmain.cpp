@@ -13,6 +13,11 @@ SimMain::SimMain(const QString& domainSockName, QWidget* parent)
 
 SimMain::~SimMain()
 {
+  m_sim.stopListening();
+  if (m_simthread.joinable())
+  {
+    m_simthread.join();
+  }
   delete ui;
 }
 
@@ -28,6 +33,7 @@ void SimMain::on_connectButton_clicked()
   if (m_sim.connectToSocket(domainSockName))
   {
     ui->connectButton->setEnabled(false);
+    ui->startListeningButton->setEnabled(true);
   }
   else
   {
@@ -35,7 +41,6 @@ void SimMain::on_connectButton_clicked()
       QString("Could not connect to domain socket '%1'").arg(domainSockName));
   }
 }
-
 
 void SimMain::on_startListeningButton_clicked()
 {
@@ -64,3 +69,4 @@ void SimMain::on_saveStateButton_clicked()
     QMessageBox::warning(this, "Error", QString("Failed to save state to file '%1'").arg(m_stateFilename));
   }
 }
+

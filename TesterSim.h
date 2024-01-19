@@ -1,9 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include <string>
-#include <map>
 #include <functional>
-
 #include <QMap>
 
 constexpr int CHKSUM_BUF_SIZE = 110;
@@ -21,11 +18,13 @@ public:
   TesterSim();
   bool connectToSocket(const QString& path);
   bool listen();
+  void stopListening();
   void setRAMLoc(uint16_t addr, uint8_t val);
   bool loadState(const QString& filename);
   bool saveState(const QString& filename);
 
 private:
+  bool m_shutdown = false;
   int m_sockFd = -1;
   uint8_t m_inbuf[128];
   uint8_t m_outbuf[128];

@@ -169,6 +169,15 @@ bool TesterSim::connectToSocket(const QString &sockPath)
   return status;
 }
 
+void TesterSim::stopListening()
+{
+  m_shutdown = true;
+  if (m_sockFd >= 0)
+  {
+    shutdown(m_sockFd, SHUT_RDWR);
+  }
+}
+
 /**
  * Determines whether the packet containing the supplied buffer should be
  * printed in its entirety.
@@ -207,7 +216,7 @@ bool TesterSim::listen()
   bool status = true;
   int fullPacketSize = 0;
 
-  while (status)
+  while (status && !m_shutdown)
   {
     // Read the first 3 bytes. The first byte (which we'll call the prefix)
     // is fixed to be one of a couple possible values, depending on the mode

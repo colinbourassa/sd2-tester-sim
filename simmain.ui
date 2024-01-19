@@ -11,14 +11,14 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SimMain</string>
+   <string>SD2 Tester Sim</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0" colspan="2">
      <widget class="QLineEdit" name="domainSocketLine">
       <property name="text">
-       <string>~/vbox-unix-domain-socket-com-port</string>
+       <string/>
       </property>
      </widget>
     </item>
@@ -41,6 +41,9 @@
     </item>
     <item row="0" column="3">
      <widget class="QPushButton" name="startListeningButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Start listening</string>
       </property>
