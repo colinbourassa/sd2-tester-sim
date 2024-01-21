@@ -11,11 +11,13 @@ CONFIG += c++17
 SOURCES += \
     TesterSim.cpp \
     TesterSimModuleInfo.cpp \
+    logviewer.cpp \
     main.cpp \
     simmain.cpp
 
 HEADERS += \
     TesterSim.h \
+    logviewer.h \
     simmain.h
 
 FORMS += \

@@ -24,6 +24,7 @@ private slots:
   void on_setRAMButton_clicked();
   void on_loadStateButton_clicked();
   void on_saveStateButton_clicked();
+  void onLogMsg(const QString& line);
 
 private:
   Ui::SimMain *ui;

@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <functional>
 #include <QMap>
+#include <QObject>
+#include <QString>
 
 constexpr int CHKSUM_BUF_SIZE = 110;
 
@@ -12,16 +14,21 @@ enum class ProtocolType
   Marelli1AF
 };
 
-class TesterSim
+class TesterSim : public QObject
 {
+  Q_OBJECT
+
 public:
-  TesterSim();
+  explicit TesterSim(QObject* parent = nullptr);
   bool connectToSocket(const QString& path);
   bool listen();
   void stopListening();
   void setRAMLoc(uint16_t addr, uint8_t val);
   bool loadState(const QString& filename);
   bool saveState(const QString& filename);
+
+signals:
+  void logMsg(const QString& line);
 
 private:
   bool m_shutdown = false;

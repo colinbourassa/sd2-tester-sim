@@ -15,22 +15,8 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="2">
-     <widget class="QLineEdit" name="domainSocketLine">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="4">
-     <widget class="QPlainTextEdit" name="plainTextEdit"/>
-    </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="connectButton">
-      <property name="text">
-       <string>Connect</string>
-      </property>
-     </widget>
+    <item row="4" column="0">
+     <widget class="QLineEdit" name="addrBox"/>
     </item>
     <item row="1" column="2">
      <widget class="QPushButton" name="loadStateButton">
@@ -49,27 +35,20 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="3">
-     <widget class="QPushButton" name="saveStateButton">
+    <item row="0" column="2">
+     <widget class="QPushButton" name="connectButton">
       <property name="text">
-       <string>Save filesystem state</string>
+       <string>Connect</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="addrLabel">
-      <property name="text">
-       <string>Addr:</string>
+    <item row="5" column="0" colspan="4">
+     <widget class="LogViewer" name="logView">
+      <property name="textInteractionFlags">
+       <set>Qt::TextSelectableByMouse</set>
       </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLineEdit" name="addrBox"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="valLabel">
-      <property name="text">
-       <string>Val:</string>
+      <property name="openLinks">
+       <bool>false</bool>
       </property>
      </widget>
     </item>
@@ -83,9 +62,44 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLineEdit" name="domainSocketLine">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLabel" name="valLabel">
+      <property name="text">
+       <string>Val:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="addrLabel">
+      <property name="text">
+       <string>Addr:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QPushButton" name="saveStateButton">
+      <property name="text">
+       <string>Save filesystem state</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LogViewer</class>
+   <extends>QTextBrowser</extends>
+   <header>logviewer.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

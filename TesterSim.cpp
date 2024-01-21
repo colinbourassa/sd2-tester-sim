@@ -56,7 +56,7 @@ std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> Tester
 };
 
 
-TesterSim::TesterSim()
+TesterSim::TesterSim(QObject* parent) : QObject(parent)
 {
   memset(m_inbuf, 0, 128);
   memset(m_outbuf, 0, 128);
@@ -156,7 +156,7 @@ bool TesterSim::connectToSocket(const QString &sockPath)
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, sockPath.toStdString().c_str(), sizeof(addr.sun_path) - 1);
 
-    if (connect(m_sockFd, (const struct sockaddr*)&addr, sizeof(struct sockaddr_un)) == 0)
+    if (::connect(m_sockFd, (const struct sockaddr*)&addr, sizeof(struct sockaddr_un)) == 0)
     {
       status = true;
     }
@@ -657,16 +657,17 @@ bool TesterSim::loadState(const QString& filename)
     in >> m_fileContents;
     infile.close();
     status = true;
-  }
 
-  printf("Loaded filesystem state:\n");
-  foreach (QString dirname, m_fileContents.keys())
-  {
-    printf(" dir: %s\n", dirname.toStdString().c_str());
-    foreach (QString filename, m_fileContents[dirname].keys())
+    emit logMsg("Loaded filesystem state");
+    foreach (QString dirname, m_fileContents.keys())
     {
-      printf("  file: %s (%d bytes)\n", filename.toStdString().c_str(), m_fileContents[dirname][filename].size());
+      printf(" dir: %s\n", dirname.toStdString().c_str());
+      foreach (QString filename, m_fileContents[dirname].keys())
+      {
+        printf("  file: %s (%d bytes)\n", filename.toStdString().c_str(), m_fileContents[dirname][filename].size());
+      }
     }
+
   }
 
   return status;
