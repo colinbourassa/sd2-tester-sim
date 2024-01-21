@@ -13,21 +13,12 @@
 #include <QDataStream>
 #include <QFileInfo>
 
-#define RED   "\x1B[31m"
-#define GRN   "\x1B[32m"
-#define YEL   "\x1B[33m"
-#define BLU   "\x1B[34m"
-#define MAG   "\x1B[35m"
-#define CYN   "\x1B[36m"
-#define WHT   "\x1B[37m"
-#define RESET "\x1B[0m"
-
 std::map<uint8_t,const char*> TesterSim::s_outColors =
 {
-  { 0x01, RED },
-  { 0x02, RED },
-  { 0x05, YEL },
-  { 0x06, GRN }
+  { 0x01, "red" },
+  { 0x02, "red" },
+  { 0x05, "yellow" },
+  { 0x06, "green" }
 };
 
 // TODO: Determine what response (if any?) is expected from 0x11 (do slow init).
@@ -139,7 +130,7 @@ bool TesterSim::processBuf(bool print)
   }
   else
   {
-    printf("Warning: received message of fewer than 7 bytes.\n");
+    emit logMsg("Warning: received message of fewer than 7 bytes.\n");
   }
   return status;
 }
@@ -198,17 +189,18 @@ bool TesterSim::shouldDisplayPacket(const uint8_t* buf)
 
 void TesterSim::printPacket(const uint8_t* buf)
 {
-  auto duration = std::chrono::system_clock::now().time_since_epoch();
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-  printf("%.3f : ", ms / 1000.0);
-
-  const char* color = nullptr;
+  QString packetStr = "<code>";
   for (int i = 0; i <= buf[2]; i++)
   {
-    color = s_outColors.count(i) ? s_outColors.at(i) : "";
-    printf("%s%02X " RESET, color, buf[i]);
+    const bool useColor = (s_outColors.count(i) > 0);
+    if (useColor)
+    {
+      packetStr += QString("<font color=\"%1\">").arg(s_outColors.at(i));
+    }
+    packetStr += QString("%1").arg(buf[i], 2, 16);
+    packetStr += useColor ? QString("</font> ") : QString(" ");
   }
-  printf("\n");
+  packetStr += "</code>";
 }
 
 bool TesterSim::listen()
@@ -247,12 +239,11 @@ bool TesterSim::listen()
       {
         if (fullPacketSize < 7)
         {
-          printf("Error: reported packet size of %d too small\n",
-                 fullPacketSize);
+          emit logMsg(QString("Error: reported packet size of %1 too small").arg(fullPacketSize));
         }
         else
         {
-          printf("Error receiving packet body\n");
+          emit logMsg("Error receiving packet body");
         }
         status = false;
       }
@@ -267,9 +258,9 @@ bool TesterSim::listen()
   return status;
 }
 
-void TesterSim::process01TabletInfo(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
+void TesterSim::process01TabletInfo(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Request for Tester info\n");
+  sim->log("Request for Tester info");
   outbuf[1] = 0;
   outbuf[2] = 0x18;
   outbuf[7] = 0x03; // sys loader maj version
@@ -292,9 +283,9 @@ void TesterSim::process01TabletInfo(const uint8_t* /*inbuf*/, uint8_t* outbuf, T
   outbuf[24] = 212; // serial num lo
 }
 
-void TesterSim::process02SerialNo(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
+void TesterSim::process02SerialNo(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Request for Tester serial no.\n");
+  sim->log("Request for Tester serial no.");
   outbuf[2] = 8;
   outbuf[7] = 0;   // hi byte
   outbuf[8] = 212; // lo byte
@@ -307,9 +298,9 @@ void TesterSim::process09(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* 
   outbuf[7] = 0x10;
 }
 
-void TesterSim::process0AWorkshopData(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)
+void TesterSim::process0AWorkshopData(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Request for workshop data\n");
+  sim->log("Request for workshop data");
   outbuf[2] = 0x76;
   outbuf[7] = 1;
   outbuf[8] = inbuf[7];
@@ -335,9 +326,7 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
 {
   const uint16_t ecuId = (inbuf[7] * 0x100) + inbuf[8];
   const uint8_t pipeNum = inbuf[9];
-  printf("--------------------------------------------\n"
-         " Starting _applModGest%04d thread on pipe %d\n"
-         "--------------------------------------------", ecuId, pipeNum);
+  sim->log(QString("Starting _applModGest%1 thread on pipe %2").arg(ecuId, 4, 10).arg(pipeNum));
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
   sim->m_applRun[pipeNum] = true;
   sim->m_currentECUID = ecuId;
@@ -348,7 +337,7 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const uint8_t ecuAddr = inbuf[7];
-  printf("Do 5-baud slow init for ECU address 0x%02X\n", ecuAddr);
+  sim->log(QString("Do 5-baud slow init for ECU address 0x%1").arg(ecuAddr, 2, 16));
 
   if (sim->s_isoBytes.count(sim->m_currentECUID))
   {
@@ -364,7 +353,7 @@ void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, Teste
   }
   else
   {
-    printf("Warning: no ISO byte record for ECU ID %04d\n", sim->m_currentECUID);
+    sim->log(QString("Warning: no ISO byte record for ECU ID %1").arg(sim->m_currentECUID, 4, 10));
   }
 }
 
@@ -438,10 +427,10 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* /*inbuf*/, uint8_t*
 
 }
 
-void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)
+void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   std::string dstring((char*)(inbuf + 14), inbuf[2] - 13);
-  printf("Display string on Tester screen: %s\n", dstring.c_str());
+  sim->log(QString("Display string on Tester screen: %1").arg(QString::fromStdString(dstring)));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -449,7 +438,7 @@ void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, Te
 void TesterSim::process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const uint8_t pipeNum = inbuf[5];
-  printf("Shut down ECU appl thread monitoring pipe %d\n", pipeNum);
+  sim->log(QString("Shut down ECU appl thread monitoring pipe %1").arg(pipeNum));
 
   if (sim->m_applRun[pipeNum])
   {
@@ -459,7 +448,7 @@ void TesterSim::process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
   }
   else
   {
-    printf("Thread not yet running; replying with negative status from applModGen...\n");
+    sim->log("Thread not yet running; replying with negative status from applModGen...");
     outbuf[2] = 7;
     outbuf[5] = 0;
     outbuf[7] = 0xfe;
@@ -469,7 +458,7 @@ void TesterSim::process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 void TesterSim::process1ECloseFile(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
   sim->m_curFileContents = nullptr;
-  printf("Close file (which is currently %s)\n", sim->m_curFile.toStdString().c_str());
+  sim->log(QString("Close file (which is currently %1)").arg(sim->m_curFile));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -485,8 +474,7 @@ void TesterSim::process20OpenFileForWriting(const uint8_t* inbuf, uint8_t* outbu
   sim->m_curFile = filenameOnly;
   sim->m_curFileContents = &(sim->m_fileContents[dirOnly][filenameOnly]);
   sim->m_curFileContents->clear(); // only truncate is supported (no append)
-  printf("Open file for writing: %s (in dir %s)\n",
-    sim->m_curFile.toStdString().c_str(), sim->m_curDir.toStdString().c_str());
+  sim->log(QString("Open file for writing: %1 (in dir %1)").arg(sim->m_curFile).arg(sim->m_curDir));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -494,7 +482,7 @@ void TesterSim::process20OpenFileForWriting(const uint8_t* inbuf, uint8_t* outbu
 void TesterSim::process21WriteToFile(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const int byteCount = inbuf[2] - 0xb;
-  printf("Write %d bytes to file\n", byteCount);
+  sim->log(QString("Write %1 bytes to file").arg(byteCount));
   for (int i = 0; i < byteCount; i++)
   {
     sim->m_curFileContents->append(inbuf[0xb + i]);
@@ -516,8 +504,7 @@ void TesterSim::process23OpenFileForReading(const uint8_t* inbuf, uint8_t* outbu
   sim->m_curFileContents = &(sim->m_fileContents[dirOnly][filenameOnly]);
   memset(sim->m_checksumBuf, 0, CHKSUM_BUF_SIZE);
 
-  printf("Open file for reading: %s (in dir %s)\n",
-    sim->m_curFile.toStdString().c_str(), sim->m_curDir.toStdString().c_str());
+  sim->log(QString("Open file for reading: %1 (in dir %2)").arg(sim->m_curFile).arg(sim->m_curDir));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -526,14 +513,14 @@ void TesterSim::process24ReadFromFile(const uint8_t* inbuf, uint8_t* outbuf, Tes
 {
   if (!sim->m_curFileContents)
   {
-    printf("Error: m_curFileContents is null. File read/write operation without an open file?\n");
+    sim->log("Error: m_curFileContents is null. File read/write operation without an open file?");
     return;
   }
 
   const int bytesLeftInFile = (sim->m_curFileContents->size() - sim->m_fileReadPos);
   const int numBytesToSend = (bytesLeftInFile >= CHKSUM_BUF_SIZE) ? CHKSUM_BUF_SIZE : bytesLeftInFile;
-  printf("Read from file (%d bytes left in file, %d bytes to send in this chunk starting at file pos %08X)\n",
-         bytesLeftInFile, numBytesToSend, sim->m_fileReadPos);
+  sim->log(QString("Read from file (%1 bytes left in file, %2 bytes to send in this chunk starting at file pos %3)").
+    arg(bytesLeftInFile).arg(numBytesToSend).arg(sim->m_fileReadPos, 8, 16));
   outbuf[2] = numBytesToSend + 0xc;
   outbuf[7] = 1;
   outbuf[8] = inbuf[7];
@@ -554,7 +541,7 @@ void TesterSim::process24ReadFromFile(const uint8_t* inbuf, uint8_t* outbuf, Tes
       outbuf[checksumBufPos] += outbuf[i];
     }
     outbuf[checksumBufPos] = ~outbuf[checksumBufPos];
-    printf("Computed checksum of %02X for this chunk\n", outbuf[checksumBufPos]);
+    sim->log(QString("Computed checksum of %1 for this chunk").arg(outbuf[checksumBufPos], 2, 16));
     sim->m_fileReadPos += numBytesToSend;
   }
   else
@@ -567,7 +554,7 @@ void TesterSim::process24ReadFromFile(const uint8_t* inbuf, uint8_t* outbuf, Tes
 
 void TesterSim::process25ChecksumFile(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Request for checksum verification of file\n");
+  sim->log("Request for checksum verification of file");
   outbuf[1] = 0;
   outbuf[2] = 0x75;
   outbuf[7] = 1;
@@ -583,23 +570,23 @@ void TesterSim::process2AChdir(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*
   const QString curDir = QString::fromStdString(std::string((char*)(inbuf + 7), inbuf[2] - 6));
   sim->m_curDir = curDir;
   sim->m_curDirIterator = sim->m_fileContents[curDir].begin();
-  printf("Change directory: %s\n", curDir.toStdString().c_str());
+  sim->log(QString("Change directory: %1").arg(curDir));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
 
 void TesterSim::process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Request for next directory entry\n");
+  sim->log("Request for next directory entry");
 
   if (sim->m_curDirIterator !=
       sim->m_fileContents[sim->m_curDir].end())
   {
     const QString filename = sim->m_curDirIterator.key();
     const uint32_t filesize = sim->m_curDirIterator.value().size();
-    printf(" File: %s, size %u\n", filename.toStdString().c_str(), filesize);
+    sim->log(QString(" File: %1, size %2").arg(filename).arg(filesize));
     const uint8_t truncLen = (filename.length() < 90) ? filename.length() : 90;
-    printf(" Truncated length of filename: %d\n", truncLen);
+    sim->log(QString(" Truncated length of filename: %1").arg(truncLen));
 
     outbuf[2] = 38 + truncLen - 1;
     outbuf[7] = 1; // indicate success
@@ -625,9 +612,9 @@ void TesterSim::process2BGetNextDirEntry(const uint8_t* inbuf, uint8_t* outbuf, 
   }
 }
 
-void TesterSim::process3AGetDateTime(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* /*sim*/)
+void TesterSim::process3AGetDateTime(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Request for Tester date/time\n");
+  sim->log("Request for Tester date/time");
   outbuf[2] = 0x0d;
   outbuf[7] = 0x06;
   outbuf[8] = 0x31;
@@ -638,9 +625,9 @@ void TesterSim::process3AGetDateTime(const uint8_t* /*inbuf*/, uint8_t* outbuf, 
   outbuf[13] = 0x06;
 }
 
-void TesterSim::process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* /*sim*/)
+void TesterSim::process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("Command to erase flash on Tester\n");
+  sim->log("Command to erase flash on Tester");
   outbuf[2] = 8;
   outbuf[8] = inbuf[7];
   outbuf[7] = 1;
@@ -661,10 +648,10 @@ bool TesterSim::loadState(const QString& filename)
     emit logMsg("Loaded filesystem state");
     foreach (QString dirname, m_fileContents.keys())
     {
-      printf(" dir: %s\n", dirname.toStdString().c_str());
+      emit logMsg(QString(" dir: %1").arg(dirname));
       foreach (QString filename, m_fileContents[dirname].keys())
       {
-        printf("  file: %s (%d bytes)\n", filename.toStdString().c_str(), m_fileContents[dirname][filename].size());
+        emit logMsg(QString("  file: %1 (%2 bytes)").arg(filename).arg(m_fileContents[dirname][filename].size()));
       }
     }
 
@@ -687,5 +674,10 @@ bool TesterSim::saveState(const QString& filename)
   }
 
   return status;
+}
+
+void TesterSim::log(const QString& line)
+{
+  emit logMsg(line);
 }
 

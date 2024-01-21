@@ -32,5 +32,6 @@ private:
   std::thread m_simthread;
   const QString m_stateFilename = "sd2-saved-state";
   static void listenOnSock(SimMain* sim);
+  void log(const QString& line);
 };
 #endif // SIMMAIN_H

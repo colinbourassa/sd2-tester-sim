@@ -48,6 +48,7 @@ private:
   QMap<QString,QVector<quint8>>::Iterator m_curDirIterator;
   QVector<quint8>* m_curFileContents = nullptr;
 
+  void log(const QString& line);
   bool shouldDisplayPacket(const uint8_t* buf);
   void printPacket(const uint8_t* buf);
   int readBytes(uint8_t* buf, int count);

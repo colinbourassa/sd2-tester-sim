@@ -22,6 +22,10 @@ void LogViewer::appendLine(const QString& line)
     }
   }
 
-  append(line);
+  auto duration = std::chrono::system_clock::now().time_since_epoch();
+  double secs = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() / 1000.0;
+
+  const QString formattedLine = QString("[%1] %2<br/>").arg(secs, 0, 'f', 3).arg(line);
+  append(formattedLine);
   m_lineCount++;
 }

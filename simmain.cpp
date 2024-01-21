@@ -24,7 +24,7 @@ SimMain::~SimMain()
 
 void SimMain::listenOnSock(SimMain* sim)
 {
-  printf("Calling TesterSim::listen()...\n");
+  sim->log("Started listening thread.\n");
   sim->m_sim.listen();
 }
 
@@ -38,8 +38,7 @@ void SimMain::on_connectButton_clicked()
   }
   else
   {
-    QMessageBox::warning(this, "Error",
-      QString("Could not connect to domain socket '%1'").arg(domainSockName));
+    log(QString("Could not connect to domain socket '%1'").arg(domainSockName));
   }
 }
 
@@ -59,7 +58,7 @@ void SimMain::on_loadStateButton_clicked()
 {
   if (!m_sim.loadState(m_stateFilename))
   {
-    ui->logView->appendLine(QString("Failed to load state from file '%1'").arg(m_stateFilename));
+    log(QString("Failed to load state from file '%1'").arg(m_stateFilename));
   }
 }
 
@@ -67,12 +66,17 @@ void SimMain::on_saveStateButton_clicked()
 {
   if (!m_sim.saveState(m_stateFilename))
   {
-    ui->logView->appendLine(QString("Failed to save state to file '%1'").arg(m_stateFilename));
+    log(QString("Failed to save state to file '%1'").arg(m_stateFilename));
   }
+}
+
+void SimMain::log(const QString& line)
+{
+  ui->logView->appendLine(line);
 }
 
 void SimMain::onLogMsg(const QString& line)
 {
-  ui->logView->appendLine(line);
+  log(line);
 }
 
