@@ -29,6 +29,7 @@ public:
 
 signals:
   void logMsg(const QString& line);
+  void lastLogMsgRepeated();
 
 private:
   bool m_shutdown = false;

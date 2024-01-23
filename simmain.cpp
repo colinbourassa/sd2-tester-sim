@@ -10,6 +10,7 @@ SimMain::SimMain(const QString& domainSockName, QWidget* parent)
   ui->setupUi(this);
   ui->domainSocketLine->setText(domainSockName);
   connect(&m_sim, &TesterSim::logMsg, this, &SimMain::onLogMsg);
+  connect(&m_sim, &TesterSim::lastLogMsgRepeated, this, &SimMain::onLastLogMsgRepeated);
 }
 
 SimMain::~SimMain()
@@ -78,5 +79,10 @@ void SimMain::log(const QString& line)
 void SimMain::onLogMsg(const QString& line)
 {
   log(line);
+}
+
+void SimMain::onLastLogMsgRepeated()
+{
+  // TODO
 }
 

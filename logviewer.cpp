@@ -6,20 +6,25 @@ LogViewer::LogViewer(QWidget* parent) : QTextBrowser(parent)
   setHtml("");
 }
 
+void LogViewer::removeFirstLine()
+{
+  QTextCursor cursor = textCursor();
+  if (cursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor, 1))
+  {
+    cursor.select(QTextCursor::LineUnderCursor);
+    cursor.removeSelectedText();
+    cursor.deleteChar();
+    cursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor, 1);
+    setTextCursor(cursor);
+    m_lineCount--;
+  }
+}
+
 void LogViewer::appendLine(const QString& line)
 {
   if (m_lineCount >= m_maxLines)
   {
-    QTextCursor cursor = textCursor();
-    if (cursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor, 1))
-    {
-      cursor.select(QTextCursor::LineUnderCursor);
-      cursor.removeSelectedText();
-      cursor.deleteChar();
-      cursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor, 1);
-      setTextCursor(cursor);
-      m_lineCount--;
-    }
+    removeFirstLine();
   }
 
   auto duration = std::chrono::system_clock::now().time_since_epoch();
@@ -29,3 +34,4 @@ void LogViewer::appendLine(const QString& line)
   append(formattedLine);
   m_lineCount++;
 }
+

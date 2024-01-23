@@ -25,6 +25,7 @@ private slots:
   void on_loadStateButton_clicked();
   void on_saveStateButton_clicked();
   void onLogMsg(const QString& line);
+  void onLastLogMsgRepeated();
 
 private:
   Ui::SimMain *ui;

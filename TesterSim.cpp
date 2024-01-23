@@ -179,9 +179,8 @@ bool TesterSim::shouldDisplayPacket(const uint8_t* buf)
   bool status = true;
   if (memcmp(buf, m_lastInbuf, numBytes) == 0)
   {
+    emit lastLogMsgRepeated();
     status = false;
-    printf(".");
-    fflush(stdout);
   }
   memcpy(m_lastInbuf, buf, numBytes);
   return status;
@@ -195,10 +194,12 @@ void TesterSim::printPacket(const uint8_t* buf)
     const bool useColor = (s_outColors.count(i) > 0);
     if (useColor)
     {
-      packetStr += QString("<font color=\"%1\">").arg(s_outColors.at(i));
+      packetStr += QString("<font color=\"%1\">%2</font> ").arg(s_outColors.at(i)).arg(buf[i], 2, 16);
     }
-    packetStr += QString("%1").arg(buf[i], 2, 16);
-    packetStr += useColor ? QString("</font> ") : QString(" ");
+    else
+    {
+      packetStr += QString("%1 ").arg(buf[i], 2, 16);
+    }
   }
   packetStr += "</code>";
 }
@@ -226,7 +227,6 @@ bool TesterSim::listen()
       {
         if (shouldDisplayPacket(m_inbuf))
         {
-          printf("\n");
           printPacket(m_inbuf);
           status = processBuf(true);
         }

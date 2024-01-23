@@ -13,6 +13,8 @@ public:
 private:
   int m_maxLines = 1024;
   int m_lineCount = 0;
+
+  void removeFirstLine();
 };
 
 #endif // LOGVIEWER_H
