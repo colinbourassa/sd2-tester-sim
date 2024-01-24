@@ -8,6 +8,7 @@ class LogViewer : public QTextBrowser
 public:
   LogViewer(QWidget* parent);
   void appendLine(const QString& text);
+  void addDot();
   inline int lineCount() const { return m_lineCount; }
 
 private:

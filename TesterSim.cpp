@@ -645,7 +645,7 @@ bool TesterSim::loadState(const QString& filename)
     infile.close();
     status = true;
 
-    emit logMsg("Loaded filesystem state");
+    emit logMsg("Loaded filesystem entries:");
     foreach (QString dirname, m_fileContents.keys())
     {
       emit logMsg(QString(" dir: %1").arg(dirname));
@@ -654,7 +654,7 @@ bool TesterSim::loadState(const QString& filename)
         emit logMsg(QString("  file: %1 (%2 bytes)").arg(filename).arg(m_fileContents[dirname][filename].size()));
       }
     }
-
+    emit logMsg("(End of filesystem entry list)");
   }
 
   return status;

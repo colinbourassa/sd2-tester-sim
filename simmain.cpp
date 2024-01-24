@@ -1,6 +1,7 @@
 #include "simmain.h"
 #include <QMessageBox>
 #include <QString>
+#include <QFile>
 #include "ui_simmain.h"
 
 SimMain::SimMain(const QString& domainSockName, QWidget* parent)
@@ -57,7 +58,11 @@ void SimMain::on_setRAMButton_clicked()
 
 void SimMain::on_loadStateButton_clicked()
 {
-  if (!m_sim.loadState(m_stateFilename))
+  if (m_sim.loadState(m_stateFilename))
+  {
+    log(QString("Loaded state from file '%1'").arg(m_stateFilename));
+  }
+  else
   {
     log(QString("Failed to load state from file '%1'").arg(m_stateFilename));
   }
@@ -65,9 +70,25 @@ void SimMain::on_loadStateButton_clicked()
 
 void SimMain::on_saveStateButton_clicked()
 {
-  if (!m_sim.saveState(m_stateFilename))
+  ui->logView->addDot(); return;
+  bool proceed = true;
+
+  if (QFile::exists(m_stateFilename))
   {
-    log(QString("Failed to save state to file '%1'").arg(m_stateFilename));
+    proceed = (QMessageBox::question(this, "Overwrite",
+      QString("'%1' exists. Overwrite?").arg(m_stateFilename)) == QMessageBox::Yes);
+  }
+
+  if (proceed)
+  {
+    if (m_sim.saveState(m_stateFilename))
+    {
+      log(QString("Saved state to file '%1'").arg(m_stateFilename));
+    }
+    else
+    {
+      log(QString("Failed to save state to file '%1'").arg(m_stateFilename));
+    }
   }
 }
 
@@ -83,6 +104,6 @@ void SimMain::onLogMsg(const QString& line)
 
 void SimMain::onLastLogMsgRepeated()
 {
-  // TODO
+  ui->logView->addDot();
 }
 
