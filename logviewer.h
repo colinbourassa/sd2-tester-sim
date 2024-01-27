@@ -12,10 +12,15 @@ public:
   inline int lineCount() const { return m_lineCount; }
 
 private:
-  int m_maxLines = 1024;
+  int m_maxLines = 8192;
   int m_lineCount = 0;
+  bool m_atBottom = false;
 
   void removeFirstLine();
+
+private slots:
+  void scrollToBottom();
+  void scrolledTo(int);
 };
 
 #endif // LOGVIEWER_H

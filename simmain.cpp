@@ -12,6 +12,7 @@ SimMain::SimMain(const QString& domainSockName, QWidget* parent)
   ui->domainSocketLine->setText(domainSockName);
   connect(&m_sim, &TesterSim::logMsg, this, &SimMain::onLogMsg);
   connect(&m_sim, &TesterSim::lastLogMsgRepeated, this, &SimMain::onLastLogMsgRepeated);
+  connect(&m_sim, &TesterSim::consecutiveWriteToFileCmd, this, &SimMain::onConsecutiveWriteToFile);
 }
 
 SimMain::~SimMain()
@@ -26,7 +27,6 @@ SimMain::~SimMain()
 
 void SimMain::listenOnSock(SimMain* sim)
 {
-  sim->log("Started listening thread.\n");
   sim->m_sim.listen();
 }
 
@@ -46,6 +46,7 @@ void SimMain::on_connectButton_clicked()
 
 void SimMain::on_startListeningButton_clicked()
 {
+  log("Starting listening thread.");
   m_simthread = std::thread(SimMain::listenOnSock, this);
 }
 
@@ -70,7 +71,6 @@ void SimMain::on_loadStateButton_clicked()
 
 void SimMain::on_saveStateButton_clicked()
 {
-  ui->logView->addDot(); return;
   bool proceed = true;
 
   if (QFile::exists(m_stateFilename))
@@ -103,6 +103,11 @@ void SimMain::onLogMsg(const QString& line)
 }
 
 void SimMain::onLastLogMsgRepeated()
+{
+  // TODO: some sort of activity indicator?
+}
+
+void SimMain::onConsecutiveWriteToFile()
 {
   ui->logView->addDot();
 }

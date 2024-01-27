@@ -30,6 +30,7 @@ public:
 signals:
   void logMsg(const QString& line);
   void lastLogMsgRepeated();
+  void consecutiveWriteToFileCmd();
 
 private:
   bool m_shutdown = false;
@@ -43,6 +44,7 @@ private:
   int m_fileReadPos = 0;
   bool m_applRun[16];
   int m_currentECUID = 0;
+  bool m_lastCmdWasWriteToFile = false;
   std::unordered_map<uint16_t,uint8_t> m_ramData;
 
   QMap<QString,QMap<QString,QVector<quint8>>> m_fileContents;
@@ -57,6 +59,7 @@ private:
   bool processBuf(bool print);
   void chdir(const std::string& dir);
   void addToFile(const std::string& name, int numBytes);
+  void emitConsecutiveWriteToFileSignal();
 
   static std::map<uint8_t,const char*> s_outColors;
   static std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> s_commandProcs;

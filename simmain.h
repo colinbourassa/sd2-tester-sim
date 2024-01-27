@@ -26,6 +26,7 @@ private slots:
   void on_saveStateButton_clicked();
   void onLogMsg(const QString& line);
   void onLastLogMsgRepeated();
+  void onConsecutiveWriteToFile();
 
 private:
   Ui::SimMain *ui;

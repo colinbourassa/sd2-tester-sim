@@ -1,9 +1,25 @@
 #include "logviewer.h"
 #include <QTextCursor>
+#include <QScrollBar>
 
 LogViewer::LogViewer(QWidget* parent) : QTextBrowser(parent)
 {
+  connect(this, &QTextBrowser::textChanged, this, &LogViewer::scrollToBottom);
+  connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &LogViewer::scrolledTo);
   setHtml("");
+}
+
+void LogViewer::scrollToBottom()
+{
+  if (m_atBottom)
+  {
+    verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+  }
+}
+
+void LogViewer::scrolledTo(int val)
+{
+  m_atBottom = (val == verticalScrollBar()->maximum());
 }
 
 void LogViewer::removeFirstLine()

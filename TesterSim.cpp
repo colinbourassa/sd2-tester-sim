@@ -117,6 +117,13 @@ bool TesterSim::processBuf(bool print)
     m_outbuf[1] = 0x00; // tester only seems to send messages with a length < 0x80,
                         // so the hi byte is always 00
 
+    // To keep the log output cleaner, we keep track of whether we
+    // received multiple consecutive Write-to-File commands.
+    if (m_inbuf[6] != 0x21)
+    {
+      m_lastCmdWasWriteToFile = false;
+    }
+
     if (s_commandProcs.count(m_inbuf[6]))
     {
       s_commandProcs.at(m_inbuf[6])(m_inbuf, m_outbuf, this);
@@ -202,6 +209,11 @@ void TesterSim::printPacket(const uint8_t* buf)
     }
   }
   packetStr += "</code>";
+}
+
+void TesterSim::emitConsecutiveWriteToFileSignal()
+{
+  emit consecutiveWriteToFileCmd();
 }
 
 bool TesterSim::listen()
@@ -430,7 +442,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* /*inbuf*/, uint8_t*
 void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   std::string dstring((char*)(inbuf + 14), inbuf[2] - 13);
-  sim->log(QString("Display string on Tester screen: %1").arg(QString::fromStdString(dstring)));
+  sim->log(QString("Display string on Tester screen: '<tt>%1</tt>'").arg(QString::fromStdString(dstring)));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -458,7 +470,7 @@ void TesterSim::process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 void TesterSim::process1ECloseFile(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
   sim->m_curFileContents = nullptr;
-  sim->log(QString("Close file (which is currently %1)").arg(sim->m_curFile));
+  sim->log(QString("Close file (which is currently '%1')").arg(sim->m_curFile));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -474,7 +486,7 @@ void TesterSim::process20OpenFileForWriting(const uint8_t* inbuf, uint8_t* outbu
   sim->m_curFile = filenameOnly;
   sim->m_curFileContents = &(sim->m_fileContents[dirOnly][filenameOnly]);
   sim->m_curFileContents->clear(); // only truncate is supported (no append)
-  sim->log(QString("Open file for writing: %1 (in dir %1)").arg(sim->m_curFile).arg(sim->m_curDir));
+  sim->log(QString("Open file for writing: %1 (in dir %2)").arg(sim->m_curFile).arg(sim->m_curDir));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
@@ -482,7 +494,21 @@ void TesterSim::process20OpenFileForWriting(const uint8_t* inbuf, uint8_t* outbu
 void TesterSim::process21WriteToFile(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const int byteCount = inbuf[2] - 0xb;
-  sim->log(QString("Write %1 bytes to file").arg(byteCount));
+
+  // If cmd 0x21 (Write-to-File) was the last packet we received,
+  // just signal that we're processing another write. This is done
+  // to decrease log clutter, since it is common for there to be
+  // many dozens (or hundreds) of Write-to-File commands received
+  // consecutively.
+  if (sim->m_lastCmdWasWriteToFile)
+  {
+    sim->emitConsecutiveWriteToFileSignal();
+  }
+  else
+  {
+    sim->log(QString("Write bytes to file"));
+    sim->m_lastCmdWasWriteToFile = true;
+  }
   for (int i = 0; i < byteCount; i++)
   {
     sim->m_curFileContents->append(inbuf[0xb + i]);
@@ -519,7 +545,7 @@ void TesterSim::process24ReadFromFile(const uint8_t* inbuf, uint8_t* outbuf, Tes
 
   const int bytesLeftInFile = (sim->m_curFileContents->size() - sim->m_fileReadPos);
   const int numBytesToSend = (bytesLeftInFile >= CHKSUM_BUF_SIZE) ? CHKSUM_BUF_SIZE : bytesLeftInFile;
-  sim->log(QString("Read from file (%1 bytes left in file, %2 bytes to send in this chunk starting at file pos %3)").
+  sim->log(QString("Read from file (%1 bytes left , %2 bytes in this chunk, file pos 0x%3)").
     arg(bytesLeftInFile).arg(numBytesToSend).arg(sim->m_fileReadPos, 8, 16));
   outbuf[2] = numBytesToSend + 0xc;
   outbuf[7] = 1;
