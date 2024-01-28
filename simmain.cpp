@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QFile>
+#include <QFileDialog>
 #include "ui_simmain.h"
 
 SimMain::SimMain(const QString& domainSockName, QWidget* parent)
@@ -59,35 +60,40 @@ void SimMain::on_setRAMButton_clicked()
 
 void SimMain::on_loadStateButton_clicked()
 {
-  if (m_sim.loadState(m_stateFilename))
+  const QString filename = QFileDialog::getOpenFileName(
+    this, "Open SD2 Tester filesystem state data", "", "SD2 Filesystem Data (*.sd2)");
+
+  if (!filename.isEmpty())
   {
-    log(QString("Loaded state from file '%1'").arg(m_stateFilename));
-  }
-  else
-  {
-    log(QString("Failed to load state from file '%1'").arg(m_stateFilename));
+    if (m_sim.loadState(filename))
+    {
+      log(QString("Loaded state from file '%1'").arg(filename));
+    }
+    else
+    {
+      log(QString("Failed to load state from file '%1'").arg(filename));
+    }
   }
 }
 
 void SimMain::on_saveStateButton_clicked()
 {
-  bool proceed = true;
+  QString filename = QFileDialog::getSaveFileName(
+    this, "Select filename to save SD2 filesystem state data", "", "SD2 Filesystem Data (*.sd2)");
 
-  if (QFile::exists(m_stateFilename))
+  if (!filename.isEmpty())
   {
-    proceed = (QMessageBox::question(this, "Overwrite",
-      QString("'%1' exists. Overwrite?").arg(m_stateFilename)) == QMessageBox::Yes);
-  }
-
-  if (proceed)
-  {
-    if (m_sim.saveState(m_stateFilename))
+    if (!filename.endsWith(".sd2", Qt::CaseInsensitive))
     {
-      log(QString("Saved state to file '%1'").arg(m_stateFilename));
+      filename += ".sd2";
+    }
+    if (m_sim.saveState(filename))
+    {
+      log(QString("Saved state to file '%1'").arg(filename));
     }
     else
     {
-      log(QString("Failed to save state to file '%1'").arg(m_stateFilename));
+      log(QString("Failed to save state to file '%1'").arg(filename));
     }
   }
 }
