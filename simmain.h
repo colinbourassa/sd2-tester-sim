@@ -32,6 +32,7 @@ private:
   Ui::SimMain *ui;
   TesterSim m_sim;
   std::thread m_simthread;
+  bool m_heartbeatBarIncreasing = true;
   static void listenOnSock(SimMain* sim);
   void log(const QString& line);
 };

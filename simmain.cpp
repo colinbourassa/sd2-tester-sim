@@ -110,7 +110,25 @@ void SimMain::onLogMsg(const QString& line)
 
 void SimMain::onLastLogMsgRepeated()
 {
-  // TODO: some sort of activity indicator?
+  const int currentVal = ui->progressBar->value();
+
+  if (m_heartbeatBarIncreasing && (currentVal < ui->progressBar->maximum()))
+  {
+    ui->progressBar->setValue(currentVal + 1);
+  }
+  else if (!m_heartbeatBarIncreasing && (currentVal > ui->progressBar->minimum()))
+  {
+    ui->progressBar->setValue(currentVal - 1);
+  }
+
+  if (ui->progressBar->value() == 0)
+  {
+    m_heartbeatBarIncreasing = true;
+  }
+  else if (ui->progressBar->value() == ui->progressBar->maximum())
+  {
+    m_heartbeatBarIncreasing = false;
+  }
 }
 
 void SimMain::onConsecutiveWriteToFile()
