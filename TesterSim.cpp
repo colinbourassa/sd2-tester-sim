@@ -392,6 +392,14 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
 
 void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
+  QString msg("KWP71 cmd payload:<code>");
+  for (unsigned int i = 7; i <= inbuf[2]; i++)
+  {
+    msg += QString(" %1").arg(inbuf[i], 2, 16, QLatin1Char('0'));
+  }
+  msg += "</code>";
+  sim->log(msg);
+
   if (inbuf[7] == 0x00) // Req ID code
   {
     outbuf[2] = 16;
