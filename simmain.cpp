@@ -31,13 +31,15 @@ void SimMain::listenOnSock(SimMain* sim)
   sim->m_sim.listen();
 }
 
-void SimMain::on_connectButton_clicked()
+void SimMain::on_startListeningButton_clicked()
 {
   const QString domainSockName = ui->domainSocketLine->text();
   if (m_sim.connectToSocket(domainSockName))
   {
-    ui->connectButton->setEnabled(false);
-    ui->startListeningButton->setEnabled(true);
+    ui->startListeningButton->setEnabled(false);
+    ui->stopListeningButton->setEnabled(true);
+    m_simthread = std::thread(SimMain::listenOnSock, this);
+    log("Starting listening thread.");
   }
   else
   {
@@ -45,10 +47,15 @@ void SimMain::on_connectButton_clicked()
   }
 }
 
-void SimMain::on_startListeningButton_clicked()
+void SimMain::on_stopListeningButton_clicked()
 {
-  log("Starting listening thread.");
-  m_simthread = std::thread(SimMain::listenOnSock, this);
+  m_sim.stopListening();
+  if (m_simthread.joinable())
+  {
+    m_simthread.join();
+  }
+  ui->startListeningButton->setEnabled(true);
+  ui->stopListeningButton->setEnabled(false);
 }
 
 void SimMain::on_setRAMButton_clicked()

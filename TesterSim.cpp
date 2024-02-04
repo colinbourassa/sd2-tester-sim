@@ -69,7 +69,7 @@ int TesterSim::readBytes(uint8_t* buf, int count)
   int bufPos = 0;
   int readResult = 0;
 
-  while (bufPos < count)
+  while ((bufPos < count) && !m_shutdown)
   {
     readResult = read(m_sockFd, buf + bufPos, count - bufPos);
     if (readResult > 0)

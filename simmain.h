@@ -19,8 +19,8 @@ public:
   ~SimMain();
 
 private slots:
-  void on_connectButton_clicked();
   void on_startListeningButton_clicked();
+  void on_stopListeningButton_clicked();
   void on_setRAMButton_clicked();
   void on_loadStateButton_clicked();
   void on_saveStateButton_clicked();
