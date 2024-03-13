@@ -21,8 +21,6 @@ std::map<uint8_t,const char*> TesterSim::s_outColors =
   { 0x06, "green" }
 };
 
-// TODO: Determine what response (if any?) is expected from 0x11 (do slow init).
-
 std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> TesterSim::s_commandProcs =
 {
   { 0x01, TesterSim::process01TabletInfo },
