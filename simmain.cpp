@@ -60,9 +60,18 @@ void SimMain::on_stopListeningButton_clicked()
 
 void SimMain::on_setRAMButton_clicked()
 {
-  uint16_t addr = ui->addrBox->text().toUInt(nullptr, 16);
-  uint8_t val = ui->valBox->text().toUInt(nullptr, 16);
-  m_sim.setRAMLoc(addr, val);
+  bool addrOk = false;
+  bool valOk = false;
+  const uint16_t addr = ui->addrBox->text().toUInt(&addrOk, 0);
+  const uint8_t val = ui->valBox->text().toUInt(&valOk, 0);
+  if (addrOk && valOk)
+  {
+    m_sim.setRAMLoc(addr, val);
+  }
+  else
+  {
+    log(QString("Error parsing RAM address and/or value input box."));
+  }
 }
 
 void SimMain::on_loadStateButton_clicked()

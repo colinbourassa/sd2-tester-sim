@@ -344,22 +344,37 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
   outbuf[7] = 1;
 }
 
+// TODO: replying to the slow init for DCON0085 with the following elicits no response
+// from WSDC32: 54 00 0D 00 02 04 11 01 55 4A 83 01 15 38
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const uint8_t ecuAddr = inbuf[7];
-  sim->log(QString("Do 5-baud slow init for ECU address 0x%1").arg(ecuAddr, 2, 16));
+  sim->log(QString("Do 5-baud slow init for ECU address 0x%1").arg(ecuAddr, 2, 16, QChar('0')));
 
   if (sim->s_isoBytes.count(sim->m_currentECUID))
   {
     const std::vector<uint8_t>& isoBytes = sim->s_isoBytes.at(sim->m_currentECUID);
     const int isoByteCount = isoBytes.size();
-    outbuf[2] = 10;
+    QString replyLogMsg = QString("Replying with keyword sequence of %1 bytes:").arg(isoByteCount);
     outbuf[2] = 7 + isoByteCount;
     outbuf[7] = 1;
+
     for (int i = 0; i < isoByteCount; i++)
     {
       outbuf[8 + i] = isoBytes[i];
+      replyLogMsg += QString(" %1").arg(isoBytes[i], 2, 16, QChar('0'));
     }
+
+    // --- temp debug ---
+    printf("slow init reply msg:");
+    for (int i = 0; i <= outbuf[2]; i++)
+    {
+      printf(" %02X", outbuf[i]);
+    }
+    printf("\n");
+    // ------------------
+
+    sim->log(replyLogMsg);
   }
   else
   {
@@ -551,8 +566,8 @@ void TesterSim::process24ReadFromFile(const uint8_t* inbuf, uint8_t* outbuf, Tes
 
   const int bytesLeftInFile = (sim->m_curFileContents->size() - sim->m_fileReadPos);
   const int numBytesToSend = (bytesLeftInFile >= CHKSUM_BUF_SIZE) ? CHKSUM_BUF_SIZE : bytesLeftInFile;
-  sim->log(QString("Read from file (%1 bytes left , %2 bytes in this chunk, file pos 0x%3)").
-    arg(bytesLeftInFile).arg(numBytesToSend).arg(sim->m_fileReadPos, 8, 16));
+  sim->log(QString("Read from file (%1 bytes left, %2 bytes in this chunk, file pos 0x%3)").
+    arg(bytesLeftInFile).arg(numBytesToSend).arg(sim->m_fileReadPos, 8, 16, QChar('0')));
   outbuf[2] = numBytesToSend + 0xc;
   outbuf[7] = 1;
   outbuf[8] = inbuf[7];
