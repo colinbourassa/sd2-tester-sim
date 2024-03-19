@@ -346,6 +346,14 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
 
 // TODO: replying to the slow init for DCON0085 with the following elicits no response
 // from WSDC32: 54 00 0D 00 02 04 11 01 55 4A 83 01 15 38
+// It seems there is inconsistency between the format in the expected response payload
+// of the Tester's serial message reply to WSDC32 after the Tester has performed the
+// slow init sequence and received the ISO/keyword byte sequence.
+// This format: (...) 01 55 00 81 seems to be correct for BMOT0145 (and possibly other
+// KWP71 modules?), but it looks like DCON0085 (and probably others) expect an additional
+// byte at position 8 that gives the length of the keyword sequence, i.e.:
+// (...) 01 06 55 4A 83 01 15 38
+// 
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const uint8_t ecuAddr = inbuf[7];
