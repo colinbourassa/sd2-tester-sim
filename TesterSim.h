@@ -1,6 +1,8 @@
 #pragma once
-#include <stdint.h>
+#include <cstdint>
 #include <functional>
+#include <set>
+#include <unordered_map>
 #include <QMap>
 #include <QObject>
 #include <QString>
@@ -72,6 +74,7 @@ private:
   static void process0AWorkshopData(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
+  static void process12GetISOKeyword(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process1C(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);

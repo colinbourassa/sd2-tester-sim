@@ -29,6 +29,7 @@ std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> Tester
   { 0x0A, TesterSim::process0AWorkshopData },
   { 0x0B, TesterSim::process0BStartApplModGest },
   { 0x11, TesterSim::process11DoSlowInit },
+  { 0x12, TesterSim::process12GetISOKeyword },
   { 0x13, TesterSim::process13CommandToECU },
   { 0x15, TesterSim::process15DisplayString },
   { 0x1C, TesterSim::process1C },
@@ -344,21 +345,31 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
   outbuf[7] = 1;
 }
 
-// TODO: replying to the slow init for DCON0085 with the following elicits no response
-// from WSDC32: 54 00 0D 00 02 04 11 01 55 4A 83 01 15 38
-// It seems there is inconsistency between the format in the expected response payload
-// of the Tester's serial message reply to WSDC32 after the Tester has performed the
-// slow init sequence and received the ISO/keyword byte sequence.
-// This format: (...) 01 55 00 81 seems to be correct for BMOT0145 (and possibly other
-// KWP71 modules?), but it looks like DCON0085 (and probably others) expect an additional
-// byte at position 8 that gives the length of the keyword sequence, i.e.:
-// (...) 01 06 55 4A 83 01 15 38
-// 
+// TODO
+// So far, I've only been able to get the WSDC32 applications to be happy
+// with the ECUs that speak KWP71. The win32 side requests that the Tester
+// perform slow init (cmd 0x11) with a particular address byte and number
+// of bytes expected in the ISO keyword (which is 3 for KWP71). This sim
+// then replies with 55 00 81 for KWP71 and the win32 app is satisfied that
+// init is complete. I haven't been able to get the modules that have
+// six-byte keyword sequences to complete init in WSDC32.
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   const uint8_t ecuAddr = inbuf[7];
-  sim->log(QString("Do 5-baud slow init for ECU address 0x%1").arg(ecuAddr, 2, 16, QChar('0')));
+  if (inbuf[2] >= 8)
+  {
+    sim->log(QString("Do 5-baud slow init for ECU address 0x%1 with %2 bytes expected in response sequence").arg(ecuAddr, 2, 16, QChar('0')).arg(inbuf[8]));
+  }
+  else
+  {
+    sim->log(QString("Do 5-baud slow init for ECU address 0x%1").arg(ecuAddr, 2, 16, QChar('0')));
+  }
 
+  process12GetISOKeyword(inbuf, outbuf, sim);
+}
+
+void TesterSim::process12GetISOKeyword(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
+{
   if (sim->s_isoBytes.count(sim->m_currentECUID))
   {
     const std::vector<uint8_t>& isoBytes = sim->s_isoBytes.at(sim->m_currentECUID);
@@ -372,6 +383,28 @@ void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, Teste
       outbuf[8 + i] = isoBytes[i];
       replyLogMsg += QString(" %1").arg(isoBytes[i], 2, 16, QChar('0'));
     }
+
+    // TODO: There are some modules whose cmd 11/12 reply message contains
+    // more than just the ISO keyword sequence -- it contains one or more
+    // frames of ID data from the ECU, which are concatenated into the same
+    // serial message payload from the Tester back to WSDC32. The following
+    // is just an experiment to see if we can make WSDC32 happy for those ECUs.
+    /*
+    outbuf[2]++;
+    outbuf[outbufIdx++] = 5;
+    for (int i = 0; i < 5; i++)
+    {
+      outbuf[2]++;
+      outbuf[outbufIdx++] = ('0' + i);
+    }
+    outbuf[2]++;
+    outbuf[outbufIdx++] = 5;
+    for (int i = 0; i < 5; i++)
+    {
+      outbuf[2]++;
+      outbuf[outbufIdx++] = ('0' + i);
+    }
+    */
 
     // --- temp debug ---
     printf("slow init reply msg:");
