@@ -126,6 +126,12 @@ bool TesterSim::processBuf(bool print)
     if (s_commandProcs.count(m_inbuf[6]))
     {
       s_commandProcs.at(m_inbuf[6])(m_inbuf, m_outbuf, this);
+      // TODO: Certain ECUs (e.g. BAbs0096) will send identification data,
+      // unsolicited, immediately after the slow init address sequence.
+      // I think the win32 side is getting stuck because it's waiting
+      // indefinitely for this ID info that the simulator never sends.
+      // We need a mechanism to simulate this unsolicited ID info behavior.
+      // Not sure what the message type should be -- maybe leave it as 0x11?
     }
     else
     {
@@ -337,7 +343,7 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
 {
   const uint16_t ecuId = (inbuf[7] * 0x100) + inbuf[8];
   const uint8_t pipeNum = inbuf[9];
-  sim->log(QString("Starting _applModGest%1 thread on pipe %2").arg(ecuId, 4, 10).arg(pipeNum));
+  sim->log(QString("Starting _applModGest%1 thread on pipe %2").arg(ecuId, 4, 10, QChar('0')).arg(pipeNum));
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
   sim->m_applRun[pipeNum] = true;
   sim->m_currentECUID = ecuId;
@@ -355,6 +361,14 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
 // six-byte keyword sequences to complete init in WSDC32.
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
+  printf("slow init command msg:");
+  for (int i = 0; i <= inbuf[2]; i++)
+  {
+    printf(" %02X", inbuf[i]);
+  }
+  printf("\n");
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+
   const uint8_t ecuAddr = inbuf[7];
   if (inbuf[2] >= 8)
   {
