@@ -106,3 +106,9 @@ std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
   {231, {0x55, 0xD0, 0x83, 0x02, 0x04, 0xAE} },
   {232, {0x55, 0xD0, 0x83, 0x14, 0xAD} }
 };
+
+std::set<int> TesterSim::s_modulesExpectingAdditionalInitInfo =
+{
+  96
+};
+

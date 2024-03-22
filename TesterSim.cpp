@@ -126,19 +126,46 @@ bool TesterSim::processBuf(bool print)
     if (s_commandProcs.count(m_inbuf[6]))
     {
       s_commandProcs.at(m_inbuf[6])(m_inbuf, m_outbuf, this);
-      // TODO: Certain ECUs (e.g. BAbs0096) will send identification data,
-      // unsolicited, immediately after the slow init address sequence.
-      // I think the win32 side is getting stuck because it's waiting
-      // indefinitely for this ID info that the simulator never sends.
-      // We need a mechanism to simulate this unsolicited ID info behavior.
-      // Not sure what the message type should be -- maybe leave it as 0x11?
     }
     else
     {
+      emit logMsg(QString("Sending generic 'success' response to command msg type 0x%1").arg(m_inbuf[6], 2, 16, QChar('0')));
       m_outbuf[2] = 7;
       m_outbuf[7] = 1;
     }
     status = sendReply(print);
+
+    // Certain ECUs (e.g. BAbs0096) will send identification data,
+    // unsolicited, immediately after the slow init address sequence.
+    // For these modules, the win32 application does not make any
+    // additional request and expects the Tester to send this ID info
+    // in an unsolicited message. It's important that the keyword
+    // sequence be sent from the Tester with msg type 0x11, but the
+    // ID info that follows must be contained in a msg of type 0x13.
+    if (status &&
+        (m_inbuf[6] == 0x11) &&
+        s_modulesExpectingAdditionalInitInfo.count(m_currentECUID))
+    {
+      emit logMsg("Sending additional init ID info because the win32 SW for this module expects it...");
+
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      // TODO: Probably want to move the population of this ID info to a
+      // separate routine. It might need to be in different formats depending
+      // on the current ECU/module.
+      m_outbuf[2] = 16;
+      m_outbuf[6] = 0x13;
+      m_outbuf[7] = 1;
+      m_outbuf[8] = 8;
+      m_outbuf[9] = 0xf6;
+      m_outbuf[10] = 0x31;
+      m_outbuf[11] = 0x31;
+      m_outbuf[12] = 0x32;
+      m_outbuf[13] = 0x33;
+      m_outbuf[14] = 0x35;
+      m_outbuf[15] = 0x38;
+      m_outbuf[16] = 0x03;
+      status = sendReply(print);
+    }
   }
   else
   {
@@ -361,12 +388,6 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
 // six-byte keyword sequences to complete init in WSDC32.
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
-  printf("slow init command msg:");
-  for (int i = 0; i <= inbuf[2]; i++)
-  {
-    printf(" %02X", inbuf[i]);
-  }
-  printf("\n");
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   const uint8_t ecuAddr = inbuf[7];
@@ -418,22 +439,20 @@ void TesterSim::process12GetISOKeyword(const uint8_t* /*inbuf*/, uint8_t* outbuf
       outbuf[2]++;
       outbuf[outbufIdx++] = ('0' + i);
     }
-    */
 
-    // --- temp debug ---
     printf("slow init reply msg:");
     for (int i = 0; i <= outbuf[2]; i++)
     {
       printf(" %02X", outbuf[i]);
     }
     printf("\n");
-    // ------------------
+    */
 
     sim->log(replyLogMsg);
   }
   else
   {
-    sim->log(QString("Warning: no ISO byte record for ECU ID %1").arg(sim->m_currentECUID, 4, 10));
+    sim->log(QString("Warning: no ISO byte record for ECU ID %1").arg(sim->m_currentECUID, 4, 10, QChar('0')));
   }
 }
 
@@ -455,6 +474,10 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
     {
       processMarelli1AFCommandToECU(inbuf, outbuf, sim);
     }
+  }
+  else
+  {
+    sim->log(QString("Warning: protocol for ECU ID %1 is not known").arg(sim->m_currentECUID, 4, 10, QChar('0')));
   }
 }
 
@@ -500,14 +523,58 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   }
   else
   {
+    sim->log("Warning: unhandled KWP71 command");
     outbuf[2] = 7;
     outbuf[7] = 1;
   }
 }
 
-void TesterSim::processFIAT9141CommandToECU(const uint8_t* /*inbuf*/, uint8_t* /*outbuf*/, TesterSim* /*sim*/)
+void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
+  QString msg("FIAT9141 cmd payload:<code>");
+  for (unsigned int i = 7; i <= inbuf[2]; i++)
+  {
+    msg += QString(" %1").arg(inbuf[i], 2, 16, QLatin1Char('0'));
+  }
+  msg += "</code>";
+  sim->log(msg);
 
+  if (inbuf[7] == 0x00) // Req ID code
+  {
+    outbuf[2] = 16;
+    outbuf[7] = 1;
+    outbuf[8] = 8;
+    outbuf[9] = 0xF6;
+    outbuf[10] = 0x31;
+    outbuf[11] = 0x31;
+    outbuf[12] = 0x32;
+    outbuf[13] = 0x33;
+    outbuf[14] = 0x35;
+    outbuf[15] = 0x38;
+    outbuf[16] = 0x03;
+  }
+  else if (inbuf[7] == 0x01) // Read RAM
+  {
+    const uint8_t count = inbuf[8];
+    const uint16_t addr = (inbuf[9] * 0x100) + inbuf[10];
+    if (sim->m_ramData.count(addr) == 0)
+    {
+      sim->m_ramData[addr] = 0;
+    }
+
+    outbuf[2] = count + 10;
+    outbuf[7] = 1;          // indicate success
+    outbuf[8] = count + 2;  // number of bytes that follow (response from ECU)
+    outbuf[9] = 0xFD;       // KWP71 response type to request 01
+    outbuf[10] = sim->m_ramData[addr];
+    outbuf[11] = 0x03;      // end-of-packet marker
+  }
+  else
+  {
+    sim->log("Warning: unhandled FIAT9141 command");
+    outbuf[2] = 7;
+    outbuf[7] = 1;
+  }
 }
 
 void TesterSim::processMarelli1AFCommandToECU(const uint8_t* /*inbuf*/, uint8_t* /*outbuf*/, TesterSim* /*sim*/)

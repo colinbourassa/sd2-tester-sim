@@ -67,6 +67,7 @@ private:
   static std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> s_commandProcs;
   static std::unordered_map<int,std::vector<uint8_t>> s_isoBytes;
   static std::unordered_map<int,ProtocolType> s_protocols;
+  static std::set<int> s_modulesExpectingAdditionalInitInfo;
 
   static void process01TabletInfo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process02SerialNo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
