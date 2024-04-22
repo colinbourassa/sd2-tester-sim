@@ -142,6 +142,7 @@ bool TesterSim::processBuf(bool print)
     // in an unsolicited message. It's important that the keyword
     // sequence be sent from the Tester with msg type 0x11, but the
     // ID info that follows must be contained in a msg of type 0x13.
+    /*
     if (status &&
         (m_inbuf[6] == 0x11) &&
         s_modulesExpectingAdditionalInitInfo.count(m_currentECUID))
@@ -166,6 +167,7 @@ bool TesterSim::processBuf(bool print)
       m_outbuf[16] = 0x03;
       status = sendReply(print);
     }
+    */
   }
   else
   {
@@ -233,14 +235,15 @@ void TesterSim::printPacket(const uint8_t* buf)
     const bool useColor = (s_outColors.count(i) > 0);
     if (useColor)
     {
-      packetStr += QString("<font color=\"%1\">%2</font> ").arg(s_outColors.at(i)).arg(buf[i], 2, 16);
+      packetStr += QString("<font color=\"%1\">%2</font> ").arg(s_outColors.at(i)).arg(buf[i], 2, 16, QChar('0'));
     }
     else
     {
-      packetStr += QString("%1 ").arg(buf[i], 2, 16);
+      packetStr += QString("%1 ").arg(buf[i], 2, 16, QChar('0'));
     }
   }
   packetStr += "</code>";
+  log(packetStr);
 }
 
 void TesterSim::emitConsecutiveWriteToFileSignal()
@@ -403,7 +406,7 @@ void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, Teste
   process12GetISOKeyword(inbuf, outbuf, sim);
 }
 
-void TesterSim::process12GetISOKeyword(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process12GetISOKeyword(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   if (sim->s_isoBytes.count(sim->m_currentECUID))
   {
@@ -419,34 +422,41 @@ void TesterSim::process12GetISOKeyword(const uint8_t* /*inbuf*/, uint8_t* outbuf
       replyLogMsg += QString(" %1").arg(isoBytes[i], 2, 16, QChar('0'));
     }
 
+    int outbufIdx = 8 + isoByteCount;
+
     // TODO: There are some modules whose cmd 11/12 reply message contains
     // more than just the ISO keyword sequence -- it contains one or more
     // frames of ID data from the ECU, which are concatenated into the same
     // serial message payload from the Tester back to WSDC32. The following
     // is just an experiment to see if we can make WSDC32 happy for those ECUs.
-    /*
-    outbuf[2]++;
-    outbuf[outbufIdx++] = 5;
-    for (int i = 0; i < 5; i++)
+    if ((inbuf[6] == 0x11) &&
+        sim->s_modulesExpectingAdditionalInitInfo.count(sim->m_currentECUID))
     {
-      outbuf[2]++;
-      outbuf[outbufIdx++] = ('0' + i);
-    }
-    outbuf[2]++;
-    outbuf[outbufIdx++] = 5;
-    for (int i = 0; i < 5; i++)
-    {
-      outbuf[2]++;
-      outbuf[outbufIdx++] = ('0' + i);
-    }
+      outbuf[2] = 0x1c;
+      outbuf[outbufIdx++] = 6;
+      outbuf[outbufIdx++] = 0;
+      outbuf[outbufIdx++] = 0xf6;
+      outbuf[outbufIdx++] = 0x30;
+      outbuf[outbufIdx++] = 0x31;
+      outbuf[outbufIdx++] = 0x32;
+      outbuf[outbufIdx++] = 0x03;
 
-    printf("slow init reply msg:");
-    for (int i = 0; i <= outbuf[2]; i++)
-    {
-      printf(" %02X", outbuf[i]);
+      outbuf[outbufIdx++] = 7;
+      outbuf[outbufIdx++] = 2;
+      outbuf[outbufIdx++] = 0xf6;
+      outbuf[outbufIdx++] = 0x33;
+      outbuf[outbufIdx++] = 0x34;
+      outbuf[outbufIdx++] = 0x35;
+      outbuf[outbufIdx++] = 0x36;
+      outbuf[outbufIdx++] = 0x03;
+
+      printf("slow init reply msg:");
+      for (int i = 0; i <= outbuf[2]; i++)
+      {
+        printf(" %02X", outbuf[i]);
+      }
+      printf("\n");
     }
-    printf("\n");
-    */
 
     sim->log(replyLogMsg);
   }

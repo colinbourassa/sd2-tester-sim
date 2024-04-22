@@ -114,6 +114,7 @@ std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
 
 std::set<int> TesterSim::s_modulesExpectingAdditionalInitInfo =
 {
-  96
+  96 // two frames of data from the ECU concatenated to the end of the
+     // ISO keyword bytes in the response to WSDC32 cmd 0x11
 };
 
