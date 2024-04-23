@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <functional>
-#include <set>
+#include <vector>
 #include <unordered_map>
 #include <QMap>
 #include <QObject>
@@ -65,9 +65,9 @@ private:
 
   static std::map<uint8_t,const char*> s_outColors;
   static std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> s_commandProcs;
-  static std::unordered_map<int,std::vector<uint8_t>> s_isoBytes;
-  static std::unordered_map<int,ProtocolType> s_protocols;
-  static std::set<int> s_modulesExpectingAdditionalInitInfo;
+  static const std::unordered_map<int,ProtocolType> s_protocols;
+  static const std::unordered_map<int,std::vector<uint8_t>> s_isoBytes;
+  static const std::unordered_map<int,std::vector<uint8_t>> s_moduleExtraInitInfo;
 
   static void process01TabletInfo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process02SerialNo(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
