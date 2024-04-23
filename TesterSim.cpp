@@ -135,39 +135,12 @@ bool TesterSim::processBuf(bool print)
     }
     status = sendReply(print);
 
-    // Certain ECUs (e.g. BAbs0096) will send identification data,
-    // unsolicited, immediately after the slow init address sequence.
-    // For these modules, the win32 application does not make any
-    // additional request and expects the Tester to send this ID info
-    // in an unsolicited message. It's important that the keyword
-    // sequence be sent from the Tester with msg type 0x11, but the
-    // ID info that follows must be contained in a msg of type 0x13.
-    /*
-    if (status &&
-        (m_inbuf[6] == 0x11) &&
-        s_modulesExpectingAdditionalInitInfo.count(m_currentECUID))
-    {
-      emit logMsg("Sending additional init ID info because the win32 SW for this module expects it...");
-
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      // TODO: Probably want to move the population of this ID info to a
-      // separate routine. It might need to be in different formats depending
-      // on the current ECU/module.
-      m_outbuf[2] = 16;
-      m_outbuf[6] = 0x13;
-      m_outbuf[7] = 1;
-      m_outbuf[8] = 8;
-      m_outbuf[9] = 0xf6;
-      m_outbuf[10] = 0x31;
-      m_outbuf[11] = 0x31;
-      m_outbuf[12] = 0x32;
-      m_outbuf[13] = 0x33;
-      m_outbuf[14] = 0x35;
-      m_outbuf[15] = 0x38;
-      m_outbuf[16] = 0x03;
-      status = sendReply(print);
-    }
-    */
+    // TODO: Of the ECUs that send unsolicited info immediately after the ISO
+    // keyword sequence, we need to determine which of them have their ID info
+    // concatenated to the cmd 0x11 (or 0x12) response payload, and which have
+    // their info sent in separate messages after the 0x11/0x12 response.
+    // In the case of separate messages, the message type is probably supposed
+    // to be set to 0x13.
   }
   else
   {
@@ -381,14 +354,6 @@ void TesterSim::process0BStartApplModGest(const uint8_t* inbuf, uint8_t* outbuf,
   outbuf[7] = 1;
 }
 
-// TODO
-// So far, I've only been able to get the WSDC32 applications to be happy
-// with the ECUs that speak KWP71. The win32 side requests that the Tester
-// perform slow init (cmd 0x11) with a particular address byte and number
-// of bytes expected in the ISO keyword (which is 3 for KWP71). This sim
-// then replies with 55 00 81 for KWP71 and the win32 app is satisfied that
-// init is complete. I haven't been able to get the modules that have
-// six-byte keyword sequences to complete init in WSDC32.
 void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   std::this_thread::sleep_for(std::chrono::seconds(1));
