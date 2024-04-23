@@ -422,33 +422,15 @@ void TesterSim::process12GetISOKeyword(const uint8_t* inbuf, uint8_t* outbuf, Te
       replyLogMsg += QString(" %1").arg(isoBytes[i], 2, 16, QChar('0'));
     }
 
-    int outbufIdx = 8 + isoByteCount;
-
-    // TODO: There are some modules whose cmd 11/12 reply message contains
+    // There are some modules whose cmd 11/12 reply message contains
     // more than just the ISO keyword sequence -- it contains one or more
     // frames of ID data from the ECU, which are concatenated into the same
-    // serial message payload from the Tester back to WSDC32. The following
-    // is just an experiment to see if we can make WSDC32 happy for those ECUs.
-    if ((inbuf[6] == 0x11) &&
-        sim->s_modulesExpectingAdditionalInitInfo.count(sim->m_currentECUID))
+    // serial message payload from the Tester back to WSDC32.
+    if (sim->s_modulesExtraInitInfo.count(sim->m_currentECUID))
     {
-      outbuf[2] = 0x1c;
-      outbuf[outbufIdx++] = 6;
-      outbuf[outbufIdx++] = 0;
-      outbuf[outbufIdx++] = 0xf6;
-      outbuf[outbufIdx++] = 0x30;
-      outbuf[outbufIdx++] = 0x31;
-      outbuf[outbufIdx++] = 0x32;
-      outbuf[outbufIdx++] = 0x03;
-
-      outbuf[outbufIdx++] = 7;
-      outbuf[outbufIdx++] = 2;
-      outbuf[outbufIdx++] = 0xf6;
-      outbuf[outbufIdx++] = 0x33;
-      outbuf[outbufIdx++] = 0x34;
-      outbuf[outbufIdx++] = 0x35;
-      outbuf[outbufIdx++] = 0x36;
-      outbuf[outbufIdx++] = 0x03;
+      const int extraDataLen = sim->s_moduleExtraInitInfo.at(sim->m_currentECUID).size();
+      outbuf[2] = 7 + isoByteCount + extraDataLen;
+      memcpy(&outbuf[8 + isoByteCount], sim->s_moduleExtraInitInfo.at(sim->m_currentECUID).data(), extraDataLen);
 
       printf("slow init reply msg:");
       for (int i = 0; i <= outbuf[2]; i++)
