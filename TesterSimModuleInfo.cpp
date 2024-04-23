@@ -1,6 +1,6 @@
 #include "TesterSim.h"
 
-std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
+const std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
 {
   {  83, ProtocolType::FIAT9141 },
   {  89, ProtocolType::FIAT9141 },
@@ -22,7 +22,7 @@ std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
 // presumably errors in the original SD2 software. We should run some experiments
 // with sending the sequences with a repaired checksum, to see if that has any
 // positive effect on WSDC32 accepting the init sequence.
-std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
+const std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
 {
   {50, {0x55, 0xCD, 0x83, 0x01, 0x98, 0x3E} },
   {51, {0x55, 0x16, 0x07, 0x01, 0x98, 0x0B} },
@@ -117,9 +117,9 @@ std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
   {232, {0x55, 0xD0, 0x83, 0x14, 0xAD} }
 };
 
-std::set<int> TesterSim::s_modulesExpectingAdditionalInitInfo =
+const std::unordered_map<int, std::vector<uint8_t>> TesterSim::s_moduleExtraInitInfo =
 {
-  96 // two frames of data from the ECU concatenated to the end of the
-     // ISO keyword bytes in the response to WSDC32 cmd 0x11
+  {96, { 0x0D, 0x01, 0xF6, 0x32, 0x35, 0x33, 0x30, 0x30, 0x32, 0x31, 0x36, 0x32, 0x30, 0x03,
+         0x0D, 0x03, 0xF6, 0x37, 0x33, 0x35, 0x36, 0x35, 0x33, 0x37, 0x36, 0x32, 0x31, 0x03 }
 };
 
