@@ -17,6 +17,11 @@ std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
   { 164, ProtocolType::KWP71 }
 };
 
+// TODO: Note that a number of these ISO keyword sequences have a bad checksum.
+// They were pulled directly from the .Install files, so these bad checksums are
+// presumably errors in the original SD2 software. We should run some experiments
+// with sending the sequences with a repaired checksum, to see if that has any
+// positive effect on WSDC32 accepting the init sequence.
 std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
 {
   {50, {0x55, 0xCD, 0x83, 0x01, 0x98, 0x3E} },
