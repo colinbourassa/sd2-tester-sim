@@ -406,7 +406,7 @@ void TesterSim::process11DoSlowInit(const uint8_t* inbuf, uint8_t* outbuf, Teste
   process12GetISOKeyword(inbuf, outbuf, sim);
 }
 
-void TesterSim::process12GetISOKeyword(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::process12GetISOKeyword(const uint8_t* /*inbuf*/, uint8_t* outbuf, TesterSim* sim)
 {
   if (sim->s_isoBytes.count(sim->m_currentECUID))
   {
@@ -426,7 +426,7 @@ void TesterSim::process12GetISOKeyword(const uint8_t* inbuf, uint8_t* outbuf, Te
     // more than just the ISO keyword sequence -- it contains one or more
     // frames of ID data from the ECU, which are concatenated into the same
     // serial message payload from the Tester back to WSDC32.
-    if (sim->s_modulesExtraInitInfo.count(sim->m_currentECUID))
+    if (sim->s_moduleExtraInitInfo.count(sim->m_currentECUID))
     {
       const int extraDataLen = sim->s_moduleExtraInitInfo.at(sim->m_currentECUID).size();
       outbuf[2] = 7 + isoByteCount + extraDataLen;
