@@ -457,15 +457,6 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
 
 void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
-  
-  QString msg("KWP71 cmd payload:<code>");
-  for (unsigned int i = 7; i <= inbuf[2]; i++)
-  {
-    msg += QString(" %1").arg(inbuf[i], 2, 16, QLatin1Char('0'));
-  }
-  msg += "</code>";
-  sim->log(msg);
-
   const uint8_t blockTitle = hasVerbosePayload ? inbuf[10] : inbuf[7];
 
   if (blockTitle == 0x00) // Req ID code
@@ -498,6 +489,17 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
     outbuf[10] = sim->m_ramData[addr];
     outbuf[11] = 0x03;      // end-of-packet marker
   }
+  else if (blockTitle == 0x07) // read trouble codes
+  {
+    outbuf[2] = 13;
+    outbuf[7] = 1;
+    outbuf[8] = 5;
+    outbuf[9] = 0x00;
+    outbuf[10] = 0x00;
+    outbuf[11] = 0x00;
+    outbuf[12] = 0x00;
+    outbuf[13] = 0x00;
+  }
   else
   {
     sim->log("Warning: unhandled KWP71 command");
@@ -508,14 +510,6 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
 
 void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
-  QString msg("FIAT9141 cmd payload:<code>");
-  for (unsigned int i = 7; i <= inbuf[2]; i++)
-  {
-    msg += QString(" %1").arg(inbuf[i], 2, 16, QLatin1Char('0'));
-  }
-  msg += "</code>";
-  sim->log(msg);
-
   const uint8_t blockTitle = hasVerbosePayload ? inbuf[9] : inbuf[7];
 
   if (blockTitle == 0x00) // Req ID code
@@ -558,17 +552,9 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
 
 void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
-  QString msg("1AF cmd payload:<code>");
-  for (unsigned int i = 7; i <= inbuf[2]; i++)
-  {
-    msg += QString(" %1").arg(inbuf[i], 2, 16, QLatin1Char('0'));
-  }
-  msg += "</code>";
-  sim->log(msg);
-
   const uint8_t blockTitle = hasVerbosePayload ? inbuf[9] : inbuf[7];
 
-  if (blockTitle == 0x51)
+  if (blockTitle == 0x51) // request for ID info
   {
     outbuf[2] = 16;
     outbuf[7] = 1;
@@ -581,6 +567,28 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[14] = 0x35;
     outbuf[15] = 0x38;
     outbuf[16] = 0x03;
+  }
+  else if (blockTitle == 0x20) // activate actuator
+  {
+    outbuf[2] = 7;
+    outbuf[7] = 1;
+  }
+  else if (blockTitle == 0x32) // request for snapshot
+  {
+    outbuf[2] = 18;
+    outbuf[7] = 1;
+    outbuf[8] = 10; // 10 snapshot bytes; see pg. 28 of FIAT 3.00601 Marelli 1AF document
+    // TODO: Need to be able to change the snapshot content via the GUI
+    outbuf[9] = 0x00;
+    outbuf[10] = 0x00;
+    outbuf[11] = 0x00;
+    outbuf[12] = 0x00;
+    outbuf[13] = 0x00;
+    outbuf[14] = 0x00;
+    outbuf[15] = 0x00;
+    outbuf[16] = 0x00;
+    outbuf[17] = 0x00;
+    outbuf[18] = 0x00;
   }
   else
   {

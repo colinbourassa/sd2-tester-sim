@@ -90,8 +90,8 @@ private:
   static void process3AGetDateTime(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
   static void process3DEraseFlash(const uint8_t* inbuf, uint8_t* outbuf, TesterSim*);
 
-  static void processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim);
-  static void processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim);
-  static void processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim);
+  static void processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
+  static void processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
+  static void processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
 };
 
