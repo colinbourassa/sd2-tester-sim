@@ -448,6 +448,19 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   msg += "</code>";
   sim->log(msg);
 
+  // TODO: Sometimes (maybe just for certain ECUs like BMOT0145?), WSDC32 sends requests with 0x13 in position 06,
+  // and the request payload starting immediately after (at position 07). In this format, the request payload does
+  // not contain the prefix/size byte, the block sequence number, or the terminator.
+  // The other format that cmd 0x13 messages can take (e.g. for BABS0096) has 0x13 at position 06, an unused byte
+  // at 07 (where we would normally put the 0x01 status in the response), and then a *complete* ECU protocol block
+  // starting at 08, for example:
+  //   pos:  06 07 08 09 0A 0B
+  //         -----------------
+  //   val:  13 00 03 04 00 03
+  //
+  // Should we just attempt to detect the format being used? Is this just a matter of checking that the block is
+  // more than 8 bytes long AND has 00 at position 07?
+
   if (inbuf[7] == 0x00) // Req ID code
   {
     outbuf[2] = 16;
@@ -465,7 +478,7 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   else if (inbuf[7] == 0x01) // Read RAM
   {
     const uint8_t count = inbuf[8];
-    const uint16_t addr = (inbuf[9] * 0x100) + inbuf[10];
+    const uint16_t addr = ((uint16_t)inbuf[9] * 0x100) + inbuf[10];
     if (sim->m_ramData.count(addr) == 0)
     {
       sim->m_ramData[addr] = 0;
@@ -513,7 +526,7 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
   else if (inbuf[7] == 0x01) // Read RAM
   {
     const uint8_t count = inbuf[8];
-    const uint16_t addr = (inbuf[9] * 0x100) + inbuf[10];
+    const uint16_t addr = ((uint16_t)inbuf[9] * 0x100) + inbuf[10];
     if (sim->m_ramData.count(addr) == 0)
     {
       sim->m_ramData[addr] = 0;
