@@ -419,17 +419,34 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
   if (s_protocols.count(currentECU))
   {
     const ProtocolType proto = s_protocols.at(currentECU);
+
+    // Sometimes (maybe just for certain ECUs like BMOT0145?), WSDC32 sends requests with 0x13 in position 06,
+    // and the request payload starting immediately after (at position 07). In this format, the request payload
+    // does not contain the block's prefix/size byte, the block sequence number, or the terminator.
+    // The other format that cmd 0x13 messages can take (e.g. for BABS0096) has 0x13 at position 06, an unused
+    // byte at position 07 (as a placeholder for the 0x01 status in the response), and then a *complete* ECU
+    // protocol block starting at 08, for example:
+    //   pos:  06 07 08 09 0A 0B
+    //         -----------------
+    //   val:  13 00 03 04 00 03 <-- note 03 byte count, 04 sequence num, and 03 terminator
+    // instead of:
+    //   val:  13 00 <-- this 00 is actually just the ID request block title, not a placeholder
+    
+    // The data is this command packet is assumed to verbosely contain an ECU protocol block
+    // if the packet has 9 or more bytes AND there is 0x00 in position 07.
+    const bool hasVerbosePayload = ((inbuf[1] > 0) || (inbuf[2] > 8)) && (inbuf[7] == 0x00);
+
     if (proto == ProtocolType::KWP71)
     {
-      processKWP71CommandToECU(inbuf, outbuf, sim);
+      processKWP71CommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
     else if (proto == ProtocolType::FIAT9141)
     {
-      processFIAT9141CommandToECU(inbuf, outbuf, sim);
+      processFIAT9141CommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
     else if (proto == ProtocolType::Marelli1AF)
     {
-      processMarelli1AFCommandToECU(inbuf, outbuf, sim);
+      processMarelli1AFCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
   }
   else
@@ -438,8 +455,9 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
   }
 }
 
-void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
+  
   QString msg("KWP71 cmd payload:<code>");
   for (unsigned int i = 7; i <= inbuf[2]; i++)
   {
@@ -448,25 +466,14 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   msg += "</code>";
   sim->log(msg);
 
-  // TODO: Sometimes (maybe just for certain ECUs like BMOT0145?), WSDC32 sends requests with 0x13 in position 06,
-  // and the request payload starting immediately after (at position 07). In this format, the request payload does
-  // not contain the prefix/size byte, the block sequence number, or the terminator.
-  // The other format that cmd 0x13 messages can take (e.g. for BABS0096) has 0x13 at position 06, an unused byte
-  // at 07 (where we would normally put the 0x01 status in the response), and then a *complete* ECU protocol block
-  // starting at 08, for example:
-  //   pos:  06 07 08 09 0A 0B
-  //         -----------------
-  //   val:  13 00 03 04 00 03
-  //
-  // Should we just attempt to detect the format being used? Is this just a matter of checking that the block is
-  // more than 8 bytes long AND has 00 at position 07?
+  const uint8_t blockTitle = hasVerbosePayload ? inbuf[10] : inbuf[7];
 
-  if (inbuf[7] == 0x00) // Req ID code
+  if (blockTitle == 0x00) // Req ID code
   {
-    outbuf[2] = 16;
-    outbuf[7] = 1;
-    outbuf[8] = 8;
-    outbuf[9] = 0xF6;
+    outbuf[2] = 16;    // overall message size (minus prefix byte)
+    outbuf[7] = 1;     // 'success' indicator
+    outbuf[8] = 8;     // number of bytes following
+    outbuf[9] = 0xF6;  // KWP71 response title with ASCII/ID data
     outbuf[10] = 0x31;
     outbuf[11] = 0x31;
     outbuf[12] = 0x32;
@@ -475,10 +482,10 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
     outbuf[15] = 0x38;
     outbuf[16] = 0x03;
   }
-  else if (inbuf[7] == 0x01) // Read RAM
+  else if (blockTitle == 0x01) // Read RAM
   {
-    const uint8_t count = inbuf[8];
-    const uint16_t addr = ((uint16_t)inbuf[9] * 0x100) + inbuf[10];
+    const uint8_t count = hasVerbosePayload ? inbuf[11] : inbuf[8];
+    const uint16_t addr = hasVerbosePayload ? (((uint16_t)inbuf[12] * 0x100) + inbuf[13]) : (((uint16_t)inbuf[9] * 0x100) + inbuf[10]);
     if (sim->m_ramData.count(addr) == 0)
     {
       sim->m_ramData[addr] = 0;
@@ -499,7 +506,7 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   }
 }
 
-void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
+void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
   QString msg("FIAT9141 cmd payload:<code>");
   for (unsigned int i = 7; i <= inbuf[2]; i++)
@@ -509,7 +516,9 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
   msg += "</code>";
   sim->log(msg);
 
-  if (inbuf[7] == 0x00) // Req ID code
+  const uint8_t blockTitle = hasVerbosePayload ? inbuf[9] : inbuf[7];
+
+  if (blockTitle == 0x00) // Req ID code
   {
     outbuf[2] = 16;
     outbuf[7] = 1;
@@ -523,10 +532,10 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
     outbuf[15] = 0x38;
     outbuf[16] = 0x03;
   }
-  else if (inbuf[7] == 0x01) // Read RAM
+  else if (blockTitle == 0x01) // Read RAM
   {
-    const uint8_t count = inbuf[8];
-    const uint16_t addr = ((uint16_t)inbuf[9] * 0x100) + inbuf[10];
+    const uint8_t count = hasVerbosePayload ? inbuf[10] : inbuf[8];
+    const uint16_t addr = hasVerbosePayload ? (((uint16_t)inbuf[11] * 0x100) + inbuf[12]) : (((uint16_t)inbuf[9] * 0x100) + inbuf[10]);
     if (sim->m_ramData.count(addr) == 0)
     {
       sim->m_ramData[addr] = 0;
@@ -547,9 +556,38 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
   }
 }
 
-void TesterSim::processMarelli1AFCommandToECU(const uint8_t* /*inbuf*/, uint8_t* /*outbuf*/, TesterSim* /*sim*/)
+void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
+  QString msg("1AF cmd payload:<code>");
+  for (unsigned int i = 7; i <= inbuf[2]; i++)
+  {
+    msg += QString(" %1").arg(inbuf[i], 2, 16, QLatin1Char('0'));
+  }
+  msg += "</code>";
+  sim->log(msg);
 
+  const uint8_t blockTitle = hasVerbosePayload ? inbuf[9] : inbuf[7];
+
+  if (blockTitle == 0x51)
+  {
+    outbuf[2] = 16;
+    outbuf[7] = 1;
+    outbuf[8] = 8;
+    outbuf[9] = 0xF6;
+    outbuf[10] = 0x31;
+    outbuf[11] = 0x31;
+    outbuf[12] = 0x32;
+    outbuf[13] = 0x33;
+    outbuf[14] = 0x35;
+    outbuf[15] = 0x38;
+    outbuf[16] = 0x03;
+  }
+  else
+  {
+    sim->log("Warning: unhandled FIAT/Marelli 1AF command");
+    outbuf[2] = 7;
+    outbuf[7] = 1;
+  }
 }
 
 void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
