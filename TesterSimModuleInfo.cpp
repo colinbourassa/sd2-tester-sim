@@ -4,6 +4,13 @@ const std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
 {
   {  83, ProtocolType::FIAT9141 },
   {  84, ProtocolType::Marelli1AF },
+  /*
+   * Needs more investigation, but the single command sent by WSDC32
+   * for 0086 (before it gives up due to lack of response) is 52 FE 01,
+   * which looks very much like the main/payload portion of a request
+   * made in Toshiba Inverter Protocol.
+   */
+  //{  86, ProtocolType::ToshibaInverter },
   {  89, ProtocolType::FIAT9141 },
   {  90, ProtocolType::KWP71 },
   {  96, ProtocolType::KWP71 },
