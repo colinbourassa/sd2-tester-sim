@@ -1,24 +1,15 @@
-Exchange immediately after ISO keyword sequence for BABS0096:
+BANT0086:
+WSDC32 sends commands like 52 FE 01 to the ECU (via msg 13h) and expects exactly
+one additional byte in the reply from the ECU. Only the last byte of the ECU's
+reply is forwarded by the Tester back to WSDC32, suggesting that this protocol
+provides one-byte-at-a-time read access. The protocol otherwise looks a bit lik
+the Toshiba Inverter Protocol, which uses a command byte of 52h to request reading
+RAM. In the Toshiba documentation, the byte pair FE 01 is referred to as a
+"communication number", and this seems to take the role of an address. Toshiba
+communication numbers are divided into different regions, with FE xx and FF xx
+usually being reserved for parameters in RAM.
 
-[1713915641.332] 54 00 29 00 02 04 11 01 55 54 83 01 15 c2 0d 01 f6 32 35 33 30 30 32 31 36 32 30 03 0d 03 f6 37 33 35 36 35 33 37 36 32 31 03 
-[1713915641.332] 50 00 06 00 00 08 09 
-[1713915641.352] 54 00 07 00 00 08 09 10 
-[1713915641.412] 50 00 0b 00 02 04 13 00 03 04 00 03 
-[1713915641.413] Warning: protocol for ECU ID 0096 is not known
-[1713915641.433] 54 00 0b 00 02 04 13 00 03 04 00 03 
-[1713915641.546] 50 00 06 00 00 08 09 
-[1713915641.566] 54 00 07 00 00 08 09 10 
-
-WSDC32 never gets past "Reading ECU information, please wait...", suggesting that it is waiting for a better reply to the cmd 13 ECU msg payload (at 641.412, above).
-It looks like a KWP71 block:
-  03: num bytes following
-  04: num sequence number (which makes sense, since 01, 02, and 03 were used by the initial
-                           ID exchange whose info was sent in the first message above)
-  00: block title for requesting ID info
-  03: terminator
-
-
-and SALZ0084:
+SALZ0084:
 [1713916448.774] 54 00 0d 00 02 04 11 01 55 d6 83 01 15 c4
 [1713916448.775] 50 00 06 00 00 08 09
 [1713916448.794] 54 00 07 00 00 08 09 10
@@ -32,7 +23,7 @@ at the code in the A.out .ecu file. The extra byte (value 00) after 13 and befor
 the start of the ID info request (04 51 00 00 55) is a WSDC32 protocol status
 byte, and we should probably set it to 01 when replying from the simulator.
 
-and PCAP0095:
+PCAP0095:
 [1713916594.012] 54 00 0d 00 02 04 11 01 55 d0 83 01 94 3d
 [1713916594.013] 50 00 06 00 00 08 09
 [1713916594.032] 54 00 07 00 00 08 09 10
