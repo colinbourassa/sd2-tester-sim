@@ -1,3 +1,9 @@
+BMOT0119:
+Verify the number of bytes expected in reply from the ECU after the slow init
+address is sent. This expected byte count should be in the 11h command. It should
+probably be 03 to reflect 55 00 81, in spite of the config file having a six-byte
+sequence. (This six byte sequence is, probably erroneously, `55 4C 83 04 13 3B`.)
+
 BANT0086:
 WSDC32 sends commands like 52 FE 01 to the ECU (via msg 13h) and expects exactly
 one additional byte in the reply from the ECU. Only the last byte of the ECU's
