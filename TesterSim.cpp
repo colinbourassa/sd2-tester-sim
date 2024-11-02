@@ -448,6 +448,10 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
     {
       processMarelli1AFCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
+    else if (proto == ProtocolType::ToshibaInverter)
+    {
+      processToshibaInverterCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
+    }
   }
   else
   {
@@ -595,6 +599,39 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     sim->log("Warning: unhandled FIAT/Marelli 1AF command");
     outbuf[2] = 7;
     outbuf[7] = 1;
+  }
+}
+
+/**
+ * When commands 52 FE 01 and 52 FF 01 are sent to the ECU, the bytes in the
+ * reply are taken together as a BCD representation of the Bosch VIM security
+ * system version, e.g. 01 71 is VIM171.
+ * WSDC32's behavior (i.e. the commands it then sends for diagnostics) will
+ * change depending on the VIM version.
+ */
+void TesterSim::processToshibaInverterCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool /*hasVerbosePayload*/)
+{
+  // A typical command looks like: (... 13 01) 52 FE 01
+  if (inbuf[8] == 0x52)
+  {
+    const uint8_t commNumberHi = inbuf[9];
+    const uint8_t commNumberLo = inbuf[10];
+    const uint16_t commNumber = ((uint16_t)commNumberHi << 8) | commNumberLo;
+
+    if (sim->m_ramData.count(commNumber) == 0)
+    {
+      sim->m_ramData[commNumber] = 0;
+    }
+
+    // This command apparently reads a single byte from the ECU, and that is the only
+    // thing echoed back to WSDC32 in the payload (i.e. after byte index 07)
+    outbuf[2] = 8; // byte count
+    outbuf[7] = 1; // indicate success
+    outbuf[8] = sim->m_ramData[commNumber];
+  }
+  else
+  {
+    sim->log("Warning: received unimplemented Toshiba Inverter command");
   }
 }
 

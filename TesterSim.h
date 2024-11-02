@@ -13,7 +13,8 @@ enum class ProtocolType
 {
   KWP71,
   FIAT9141,
-  Marelli1AF
+  Marelli1AF,
+  ToshibaInverter
 };
 
 class TesterSim : public QObject
@@ -93,5 +94,6 @@ private:
   static void processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
   static void processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
   static void processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
+  static void processToshibaInverterCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
 };
 

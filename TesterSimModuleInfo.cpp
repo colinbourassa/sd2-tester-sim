@@ -10,7 +10,7 @@ const std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
    * which looks very much like the main/payload portion of a request
    * made in Toshiba Inverter Protocol.
    */
-  //{  86, ProtocolType::ToshibaInverter },
+  {  86, ProtocolType::ToshibaInverter },
   {  89, ProtocolType::FIAT9141 },
   {  90, ProtocolType::KWP71 },
   {  96, ProtocolType::KWP71 },
