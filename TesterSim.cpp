@@ -448,9 +448,9 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
     {
       processMarelli1AFCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
-    else if (proto == ProtocolType::ToshibaInverter)
+    else if (proto == ProtocolType::BoschAlarm)
     {
-      processToshibaInverterCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
+      processBoschAlarmCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
   }
   else
@@ -609,7 +609,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
  * WSDC32's behavior (i.e. the commands it then sends for diagnostics) will
  * change depending on the VIM version.
  */
-void TesterSim::processToshibaInverterCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool /*hasVerbosePayload*/)
+void TesterSim::processBoschAlarmCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool /*hasVerbosePayload*/)
 {
   // A typical command looks like: (... 13 01) 52 FE 01
   if (inbuf[8] == 0x52)
@@ -629,9 +629,22 @@ void TesterSim::processToshibaInverterCommandToECU(const uint8_t* inbuf, uint8_t
     outbuf[7] = 1; // indicate success
     outbuf[8] = sim->m_ramData[commNumber];
   }
+  else if (inbuf[8] == 0x44)
+  {
+    // This is another type of Read command -- possible from a different address space or device?
+    // Unlike cmd 52h, it is followed by only a single byte (which must be an 8-bit address.)
+    const uint8_t commNumber = inbuf[9];
+    if (sim->m_ramData.count(commNumber) == 0)
+    {
+      sim->m_ramData[commNumber] = 0;
+    }
+    outbuf[2] = 8; // byte count
+    outbuf[7] = 1; // indicate success
+    outbuf[8] = sim->m_ramData[commNumber];
+  }
   else
   {
-    sim->log("Warning: received unimplemented Toshiba Inverter command");
+    sim->log("Warning: received unimplemented Bosch Alarm command");
   }
 }
 

@@ -1,4 +1,4 @@
-BANT0086:
+=== BANT0086 ===
 WSDC32 sends commands like 52 FE 01 to the ECU (via msg 13h) and expects exactly
 one additional byte in the reply from the ECU. Only the last byte of the ECU's
 reply is forwarded by the Tester back to WSDC32, suggesting that this protocol
@@ -26,9 +26,19 @@ VIM172:
 [1730564819.470] 50 00 0a 00 02 04 13 01 52 67 01
 [1730564819.489] 54 00 08 00 02 04 13 01 00
 
+Requesting error codes:
+44 aa
+44 ab
+
+Requesting sensor states:
+44 96: Alarm status (00 == disarmed, 01 == immobilized, 02 == armed, 03 == in alarm, 04 == panic, 05 = not operating)
+44 c3: Sensor states
+  bit 0:
+  bit 1:
+
 For VIM171, WSDC32 would send ECU commands 44 96 and 44 C3.
 
-SALZ0084:
+=== SALZ0084 ===
 [1713916448.774] 54 00 0d 00 02 04 11 01 55 d6 83 01 15 c4
 [1713916448.775] 50 00 06 00 00 08 09
 [1713916448.794] 54 00 07 00 00 08 09 10
@@ -42,7 +52,7 @@ at the code in the A.out .ecu file. The extra byte (value 00) after 13 and befor
 the start of the ID info request (04 51 00 00 55) is a WSDC32 protocol status
 byte, and we should probably set it to 01 when replying from the simulator.
 
-PCAP0095:
+=== PCAP0095 ===
 [1713916594.012] 54 00 0d 00 02 04 11 01 55 d0 83 01 94 3d
 [1713916594.013] 50 00 06 00 00 08 09
 [1713916594.032] 54 00 07 00 00 08 09 10
