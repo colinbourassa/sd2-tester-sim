@@ -67,6 +67,7 @@ void SimMain::on_setRAMButton_clicked()
   if (addrOk && valOk)
   {
     m_sim.setRAMLoc(addr, val);
+    log(QString("Set RAM location %1 to %2.").arg(addr, 4, 16, QChar('0')).arg(val, 2, 16, QChar('0')));
   }
   else
   {
@@ -116,7 +117,10 @@ void SimMain::on_saveStateButton_clicked()
 
 void SimMain::log(const QString& line)
 {
-  ui->logView->appendLine(line);
+  const auto duration = std::chrono::system_clock::now().time_since_epoch();
+  const double secs = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() / 1000.0;
+  const QString formattedLine = QString("[%1] %2").arg(secs, 0, 'f', 3).arg(line);
+  ui->logView->appendPlainText(formattedLine);
 }
 
 void SimMain::onLogMsg(const QString& line)
@@ -149,6 +153,7 @@ void SimMain::onLastLogMsgRepeated()
 
 void SimMain::onConsecutiveWriteToFile()
 {
-  ui->logView->addDot();
+  ui->logView->textCursor().movePosition(QTextCursor::End);
+  ui->logView->textCursor().insertText(".");
 }
 

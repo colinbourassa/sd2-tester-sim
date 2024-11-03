@@ -15,16 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="5" column="0" colspan="7">
-     <widget class="LogViewer" name="logView">
-      <property name="textInteractionFlags">
-       <set>Qt::TextSelectableByMouse</set>
-      </property>
-      <property name="openLinks">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="5">
      <widget class="QPushButton" name="startListeningButton">
       <property name="text">
@@ -127,16 +117,25 @@
       </property>
      </widget>
     </item>
+    <item row="5" column="0" colspan="7">
+     <widget class="QPlainTextEdit" name="logView">
+      <property name="undoRedoEnabled">
+       <bool>false</bool>
+      </property>
+      <property name="plainText">
+       <string notr="true"/>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+      </property>
+      <property name="maximumBlockCount">
+       <number>5000</number>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>LogViewer</class>
-   <extends>QTextBrowser</extends>
-   <header>logviewer.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

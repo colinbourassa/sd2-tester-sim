@@ -69,7 +69,6 @@ private:
   void addToFile(const std::string& name, int numBytes);
   void emitConsecutiveWriteToFileSignal();
 
-  static std::map<uint8_t,const char*> s_outColors;
   static std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> s_commandProcs;
   static const std::unordered_map<int,ProtocolType> s_protocols;
   static const std::unordered_map<int,std::vector<uint8_t>> s_isoBytes;

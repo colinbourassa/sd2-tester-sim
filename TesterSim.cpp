@@ -13,14 +13,6 @@
 #include <QDataStream>
 #include <QFileInfo>
 
-std::map<uint8_t,const char*> TesterSim::s_outColors =
-{
-  { 0x01, "red" },
-  { 0x02, "red" },
-  { 0x05, "yellow" },
-  { 0x06, "green" }
-};
-
 std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> TesterSim::s_commandProcs =
 {
   { 0x01, TesterSim::process01TabletInfo },
@@ -202,20 +194,11 @@ bool TesterSim::shouldDisplayPacket(const uint8_t* buf)
 
 void TesterSim::printPacket(const uint8_t* buf)
 {
-  QString packetStr = "<code>";
+  QString packetStr;
   for (int i = 0; i <= buf[2]; i++)
   {
-    const bool useColor = (s_outColors.count(i) > 0);
-    if (useColor)
-    {
-      packetStr += QString("<font color=\"%1\">%2</font> ").arg(s_outColors.at(i)).arg(buf[i], 2, 16, QChar('0'));
-    }
-    else
-    {
-      packetStr += QString("%1 ").arg(buf[i], 2, 16, QChar('0'));
-    }
+    packetStr += QString("%1 ").arg(buf[i], 2, 16, QChar('0'));
   }
-  packetStr += "</code>";
   log(packetStr);
 }
 
@@ -644,14 +627,14 @@ void TesterSim::processBoschAlarmCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else
   {
-    sim->log("Warning: received unimplemented Bosch Alarm command");
+    sim->log("Warning: unhandled Bosch Alarm command");
   }
 }
 
 void TesterSim::process15DisplayString(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim)
 {
   std::string dstring((char*)(inbuf + 14), inbuf[2] - 13);
-  sim->log(QString("Display string on Tester screen: '<tt>%1</tt>'").arg(QString::fromStdString(dstring)));
+  sim->log(QString("Display string on Tester screen: '%1'").arg(QString::fromStdString(dstring)));
   outbuf[2] = 7;
   outbuf[7] = 1;
 }
