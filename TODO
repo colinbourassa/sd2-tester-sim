@@ -1,42 +1,31 @@
 === BANT0086 ===
-WSDC32 sends commands like 52 FE 01 to the ECU (via msg 13h) and expects exactly
-one additional byte in the reply from the ECU. Only the last byte of the ECU's
-reply is forwarded by the Tester back to WSDC32, suggesting that this protocol
-provides one-byte-at-a-time read access. The protocol otherwise looks a bit lik
-the Toshiba Inverter Protocol, which uses a command byte of 52h to request reading
-RAM. In the Toshiba documentation, the byte pair FE 01 is referred to as a
-"communication number", and this seems to take the role of an address. Toshiba
-communication numbers are divided into different regions, with FE xx and FF xx
-usually being reserved for parameters in RAM.
+When commands are sent to the ECU using this protocol, the reponse includes a
+single byte of data.
 
-When this ECU is requested to read bytes from memory at locations FE and FF,
-these two bytes are taken together as a BCD value indicating the type of Bosch
-security system (e.g. 01 71 means VIM171). WSDC32 behavior changes depending on
-the Bosch system reported.
+Command 52h is a read request, and always seems to be followed by an address and
+what looks to be a byte count. When issued by the SD2, the byte count is always
+01, so the code running in the Tester only needs to transfer the last byte of
+the ECU's reply back to WSDC32.
 
-VIM172:
-[1730564819.384] 50 00 0a 00 02 04 13 01 52 fe 01
-[1730564819.404] 54 00 08 00 02 04 13 01 01
-[1730564819.407] 50 00 0a 00 02 04 13 01 52 ff 01
-[1730564819.425] 54 00 08 00 02 04 13 01 72
-[1730564819.429] 50 00 10 00 02 04 13 01 52 66 01 00 00 00 00 00 00
-[1730564819.449] 54 00 08 00 02 04 13 01 00
-[1730564819.450] 50 00 06 00 00 08 09
-[1730564819.469] 54 00 07 00 00 08 09 10
-[1730564819.470] 50 00 0a 00 02 04 13 01 52 67 01
-[1730564819.489] 54 00 08 00 02 04 13 01 00
+52 FE 01 : Read one byte at location FE
+52 FF 01 : Read one byte at location FF
 
-Requesting error codes:
-44 aa
-44 ab
+The previous two reads are always the first ones run by the software for BANT0086.
+The two returned bytes are taken together as a BCD representation of the
+particular model of Bosch alarm module, e.g. 01 72 is VIM172. WSDC32 will change
+the particular sequence of subsequent read requests depending on the VIM type.
 
-Requesting sensor states:
-44 96: Alarm status (00 == disarmed, 01 == immobilized, 02 == armed, 03 == in alarm, 04 == panic, 05 = not operating)
-44 c3: Sensor states
-  bit 0:
-  bit 1:
+52 66 01 00 00 00 00 00 00 : Read location 66, but with extra (ignored?) payload bytes
 
-For VIM171, WSDC32 would send ECU commands 44 96 and 44 C3.
+Command 44h is apparently also a Read, but is perhaps reading from a different
+address space or device. The following commands apply to VIM172:
+
+44 AA : Read fault code flags
+44 AB : Read more fault code flags
+44 96 : Read alarm status
+  (00 == disarmed, 01 == immobilized, 02 == armed, 03 == in alarm, 04 == panic, 05 = not operating)
+44 C3 : Read sensor states
+
 
 === SALZ0084 ===
 [1713916448.774] 54 00 0d 00 02 04 11 01 55 d6 83 01 15 c4
@@ -51,6 +40,7 @@ This one looks like FIAT/Marelli 1AF, which we had already determined by looking
 at the code in the A.out .ecu file. The extra byte (value 00) after 13 and before
 the start of the ID info request (04 51 00 00 55) is a WSDC32 protocol status
 byte, and we should probably set it to 01 when replying from the simulator.
+
 
 === PCAP0095 ===
 [1713916594.012] 54 00 0d 00 02 04 11 01 55 d0 83 01 94 3d
