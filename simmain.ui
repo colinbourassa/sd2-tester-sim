@@ -119,6 +119,11 @@
     </item>
     <item row="5" column="0" colspan="7">
      <widget class="QPlainTextEdit" name="logView">
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+       </font>
+      </property>
       <property name="undoRedoEnabled">
        <bool>false</bool>
       </property>
@@ -136,6 +141,17 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>domainSocketLine</tabstop>
+  <tabstop>startListeningButton</tabstop>
+  <tabstop>stopListeningButton</tabstop>
+  <tabstop>loadStateButton</tabstop>
+  <tabstop>saveStateButton</tabstop>
+  <tabstop>addrBox</tabstop>
+  <tabstop>valBox</tabstop>
+  <tabstop>setRAMButton</tabstop>
+  <tabstop>logView</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
