@@ -53,6 +53,8 @@ const std::unordered_map<int,std::vector<uint8_t>> TesterSim::s_isoBytes =
   // The .Install file for BANT0086 gives the ISO keyword sequence as:
   // { 0x55, 0x0E, 0x07, 0x01, 0x15, 0x80 }
   // but this ECU apparently doesn't do an init sequence, so this never comes into play.
+  // TODO: WSDC32 complains about the keyword sequence if we just send zeros,
+  // so try the bytes listed above instead.
   {86, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },
 
   {88, {0x55, 0x49, 0x83, 0x01, 0x15, 0x37} },

@@ -14,6 +14,7 @@ enum class ProtocolType
   KWP71,
   FIAT9141,
   Marelli1AF,
+
   /**
    * This one seems to be an ealier version of the protocol used by Bosch with
    * the Smartra III immobilizer, the spec for which was made available as
