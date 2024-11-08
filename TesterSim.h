@@ -32,7 +32,7 @@ public:
   bool connectToSocket(const QString& path);
   bool listen();
   void stopListening();
-  void setRAMLoc(uint16_t addr, uint8_t val);
+  void setRAMLoc(uint16_t addr, uint16_t val);
   bool loadState(const QString& filename);
   bool saveState(const QString& filename);
 
@@ -54,7 +54,7 @@ private:
   bool m_applRun[16];
   int m_currentECUID = 0;
   bool m_lastCmdWasWriteToFile = false;
-  std::unordered_map<uint16_t,uint8_t> m_ramData;
+  std::unordered_map<uint16_t,uint16_t> m_ramData;
 
   QMap<QString,QMap<QString,QVector<quint8>>> m_fileContents;
   QMap<QString,QVector<quint8>>::Iterator m_curDirIterator;

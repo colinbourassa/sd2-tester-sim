@@ -50,7 +50,7 @@ TesterSim::TesterSim(QObject* parent) : QObject(parent)
   }
 }
 
-void TesterSim::setRAMLoc(uint16_t addr, uint8_t val)
+void TesterSim::setRAMLoc(uint16_t addr, uint16_t val)
 {
   m_ramData[addr] = val;
 }
@@ -543,22 +543,47 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
 
   if (blockTitle == 0x51) // request for ID info
   {
-    outbuf[2] = 16;
+    outbuf[2] = 24;
     outbuf[7] = 1;
-    outbuf[8] = 8;
-    outbuf[9] = 0xF6;
-    outbuf[10] = 0x31;
-    outbuf[11] = 0x31;
-    outbuf[12] = 0x32;
+    outbuf[8] = 16; // was 8
+    outbuf[9] = 0xAE; // ID of reply to request for info
+    outbuf[10] = 0xAA; // normally sync bytes for 1AF protocol, but SD2 seems to expect that
+                       // the Marelli controller for the Ferrari 355 F1 gearbox put the
+                       // "Marelli ECU code" value here
+    outbuf[11] = 0x55;
+    outbuf[12] = 0xCC;
     outbuf[13] = 0x33;
-    outbuf[14] = 0x35;
-    outbuf[15] = 0x38;
-    outbuf[16] = 0x03;
+    outbuf[14] = 0x31; // start of Marelli SW version
+    outbuf[15] = 0x32;
+    outbuf[16] = 0x33;
+    outbuf[17] = 0x34;
+    outbuf[18] = 0x35;
+    outbuf[19] = 0x36;
+    outbuf[20] = 0x97; // SW release year in BCD
+    outbuf[21] = 0x01; // SW release month in BCD
+    outbuf[22] = 0x02; // SW release day in BCD
+    outbuf[23] = 0xAA; // ID info block terminator
+    outbuf[24] = 0xEF; // 8 bit checksum of everything in the 1AF frame
   }
   else if (blockTitle == 0x20) // activate actuator
   {
     outbuf[2] = 7;
     outbuf[7] = 1;
+  }
+  else if (blockTitle == 0x31)
+  {
+    const uint8_t valueCode = hasVerbosePayload ? outbuf[10] : outbuf[8];
+
+    outbuf[2] = 13;
+    outbuf[7] = 1;
+    outbuf[8] = 5; // bytecount
+    outbuf[9] = 0xCE;
+    outbuf[10] = sim->m_ramData[valueCode] >> 8;
+    outbuf[11] = sim->m_ramData[valueCode] & 0xff;
+
+    uint16_t checksum = outbuf[8] + outbuf[9] + outbuf[10] + outbuf[11];
+    outbuf[12] = (checksum >> 8);
+    outbuf[13] = checksum & 0xff;
   }
   else if (blockTitle == 0x32) // request for snapshot
   {

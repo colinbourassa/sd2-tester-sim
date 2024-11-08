@@ -1,0 +1,50 @@
+== MCAM0151 ==
+TODO: It seems that some of these requests expect a multi-byte value in response,
+while some of them expect only a single byte.
+
+0x31 cmd value codes:
+  1E: Intended market? (EUR, US, ...?)
+  01: Engagement potentiometer travel (mm)
+      Range is 0x0000 (-3.71 mm) to 0x03ff (26.38 mm), 0.03 mm LSB
+  02: Potentiometer clutch travel (degrees)
+      Range is 0x0000 (-41.75 deg) to 0x03ff (29.79 deg), 0.07 deg LSB
+  03: Clutch travel (mm)
+      Range is 0x0000 (-2.70 mm) to 0x03ff (33.62 mm), 0.0355 deg LSB
+  04: Clutch travel reference (mm)
+      Range is 0x0000 (-2.70 mm) to 0x03ff (33.62 mm), 0.0355 deg LSB
+  05: Throttle potentiometer 
+      Range is 0x0000 to 0x03ff, taken as direct units
+  06: Hydraulic circuit pressure (bar)
+      Range is 0x0000 (-12.00 bar) to 0x03ff (90.30 bar), 0.10 bar LSB
+  07: Water temperature (deg C)
+      Range is 0x0000 to 0x2000, BCD degrees (e.g. 0x1253 is 125.3 deg)
+  08: Battery voltage (V)
+      2.44V LSB
+  09: Lever status
+      0x0400: Neutral
+  10: Engine RPM
+      1 RPM LSB
+  11: Gearbox primary angle speed
+      1 RPM LSB
+  13: Gear engaged
+      Most values show "NEUTRAL"
+  14: Bitfield: (TODO: single byte response?)
+      bit 8: Brake SW status (0: on, 1: off)
+      bit 9: Driver side door status (0: off, 1: on)
+      bit 10: Key input condition (0: off, 1: on)
+      bit 11: Startup input status (0: off, 1: on)
+      bit 12: Auto SW status (0: off, 1: on)
+      bit 13: Sport SW status (0: off, 1: on)
+      bit 14: Low grip SW status (0: off, 1: on)
+  15: SV current control for uneven (odd?) gear engagement
+      Only the high byte is checked; low byte is ignored -- TODO: single byte response?
+      High byte LSB is 9.8 mA
+  16: SV current control for even gear engagement
+      Only the high byte is checked; low byte is ignored -- TODO: single byte response?
+      High byte LSB is 9.8 mA
+  20: Pump relay control
+      If any of the lower 4 bits in the high byte (first byte in the reply msg) are set,
+      this shows as RELAY ON.
+  21: Effective torque Motronic
+      16-bit value, 1 Nm LSB
+

@@ -21,11 +21,21 @@ Command 44h is apparently also a Read, but is perhaps reading from a different
 address space or device. The following commands apply to VIM172:
 
 44 AA : Read fault code flags
+  bit 0: ECU overheating
+  bit 3: locking circuit
+  bit 4: EEPROM checksum
 44 AB : Read more fault code flags
+  bit 0: ECU interface
+  bit 1: ECU interface
+  bit 2: dialogue alarm system / interface ECU
 44 96 : Read alarm status
-  (00 == disarmed, 01 == immobilized, 02 == armed, 03 == in alarm, 04 == panic, 05 = not operating)
+  (00: disarmed, 01: immobilized, 02: armed, 03: in alarm, 04: panic, 05: not operating)
 44 C3 : Read sensor states
-
+  bit 0: doors status (0: closed, 1: open)
+  bit 1: front lid (0: closed, 1: open)
+  bit 2: rear lid (0: closed, 1: open)
+  bit 5: inclination sensor (0: not activated, 1: activated)
+  bit 7: ignition (0: off, 1: on)
 
 === SALZ0084 ===
 [1713916448.774] 54 00 0d 00 02 04 11 01 55 d6 83 01 15 c4
