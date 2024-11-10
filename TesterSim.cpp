@@ -545,7 +545,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
   {
     outbuf[2] = 24;
     outbuf[7] = 1;
-    outbuf[8] = 16; // was 8
+    outbuf[8] = 16;
     outbuf[9] = 0xAE; // ID of reply to request for info
     outbuf[10] = 0xAA; // normally sync bytes for 1AF protocol, but SD2 seems to expect that
                        // the Marelli controller for the Ferrari 355 F1 gearbox put the
@@ -563,12 +563,13 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[21] = 0x01; // SW release month in BCD
     outbuf[22] = 0x02; // SW release day in BCD
     outbuf[23] = 0xAA; // ID info block terminator
-    outbuf[24] = 0xEF; // 8 bit checksum of everything in the 1AF frame
+    sim->add8BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x20) // activate actuator
   {
     outbuf[2] = 7;
     outbuf[7] = 1;
+    // TODO
   }
   else if (blockTitle == 0x31)
   {
@@ -576,22 +577,23 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
 
     outbuf[2] = 13;
     outbuf[7] = 1;
-    outbuf[8] = 5; // bytecount
-    outbuf[9] = 0xCE;
+    outbuf[8] = 5;    // bytecount
+    outbuf[9] = 0xCE; // reply title
+    // Note that this is not entirely authentic; some value codes may return in a single byte,
+    // while others occupy two bytes that are taken together as a 16-bit value
     outbuf[10] = sim->m_ramData[valueCode] >> 8;
     outbuf[11] = sim->m_ramData[valueCode] & 0xff;
-
-    uint16_t checksum = outbuf[8] + outbuf[9] + outbuf[10] + outbuf[11];
-    outbuf[12] = (checksum >> 8);
-    outbuf[13] = checksum & 0xff;
+    sim->add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x32) // request for snapshot
   {
-    outbuf[2] = 18;
+    outbuf[2] = 21; // bytecount in the SD2 frame (including the ending checksum)
     outbuf[7] = 1;
-    outbuf[8] = 10; // 10 snapshot bytes; see pg. 28 of FIAT 3.00601 Marelli 1AF document
+    outbuf[8] = 13; // bytecount in the 1AF frame; pg. 28 of FIAT 3.00601 Marelli 1AF document seems to have an error here
     // TODO: Need to be able to change the snapshot content via the GUI
-    outbuf[9] = 0x00;
+    // TODO: Also need to determine whether this snapshot size is the same in
+    // the "official" protocol implementation and the Ferrari/Marelli TCU version
+    outbuf[9] = 0xCD; // reply title
     outbuf[10] = 0x00;
     outbuf[11] = 0x00;
     outbuf[12] = 0x00;
@@ -601,6 +603,8 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[16] = 0x00;
     outbuf[17] = 0x00;
     outbuf[18] = 0x00;
+    outbuf[19] = 0x00;
+    sim->add16BitChecksum(&outbuf[8]);
   }
   else
   {
@@ -609,6 +613,53 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[7] = 1;
   }
 }
+
+/**
+ * Computes a 16-bit checksum by iterating over the contents of a frame, using
+ * the value of the first byte to determine the total number of bytes in the
+ * frame. The bytecount value does not count itself, but does count the two
+ * bytes of the checksum, e.g:
+ *  [00] 05 // number of bytes to follow
+ *  [01] 01 // sample block title
+ *  [02] 07 // sample data byte A
+ *  [03] 08 // sample data byte B
+ *  [04] 00 // checksum high byte
+ *  [05] 15 // checksum lo byte
+ */
+void TesterSim::add16BitChecksum(uint8_t* frame) const
+{
+  const uint8_t bytecount = frame[0];
+  uint16_t checksum = 0;
+  for (uint8_t i = 0; i < (bytecount - 1); i++)
+  {
+    checksum += frame[i];
+  }
+  frame[bytecount - 1] = (checksum >> 8);
+  frame[bytecount] = checksum & 0xff;
+}
+
+/**
+ * Computes a 8-bit checksum by iterating over the contents of a frame, using
+ * the value of the first byte to determine the total number of bytes in the
+ * frame. The bytecount value does not count itself, but does count the single
+ * byte of the checksum, e.g:
+ *  [00] 04 // number of bytes to follow
+ *  [01] 01 // sample block title
+ *  [02] 07 // sample data byte A
+ *  [03] 08 // sample data byte B
+ *  [04] 14 // checksum
+ */
+void TesterSim::add8BitChecksum(uint8_t* frame) const
+{
+  const uint8_t bytecount = frame[0];
+  uint8_t checksum = 0;
+  for (uint8_t i = 0; i < (bytecount - 1); i++)
+  {
+    checksum += frame[i];
+  }
+  frame[bytecount] = checksum;
+}
+
 
 /**
  * When commands 52 FE 01 and 52 FF 01 are sent to the ECU, the bytes in the
