@@ -3,6 +3,7 @@
 #include <QString>
 #include <QFile>
 #include <QFileDialog>
+#include <vector>
 #include "ui_simmain.h"
 
 SimMain::SimMain(const QString& domainSockName, QWidget* parent)
@@ -14,6 +15,7 @@ SimMain::SimMain(const QString& domainSockName, QWidget* parent)
   connect(&m_sim, &TesterSim::logMsg, this, &SimMain::onLogMsg);
   connect(&m_sim, &TesterSim::lastLogMsgRepeated, this, &SimMain::onLastLogMsgRepeated);
   connect(&m_sim, &TesterSim::consecutiveWriteToFileCmd, this, &SimMain::onConsecutiveWriteToFile);
+  updateSnapshotDisplay(0);
 }
 
 SimMain::~SimMain()
@@ -155,5 +157,31 @@ void SimMain::onConsecutiveWriteToFile()
 {
   ui->logView->textCursor().movePosition(QTextCursor::End);
   ui->logView->textCursor().insertText(".");
+}
+
+void SimMain::on_snapshotNumberBox_valueChanged(int snapshotIndex)
+{
+  updateSnapshotDisplay(snapshotIndex);
+}
+
+void SimMain::updateSnapshotDisplay(int snapshotIndex)
+{
+  const std::vector<uint8_t>& content = m_sim.getSnapshotContent(snapshotIndex);
+  for (int i = 0; i < ui->snapshotDataTable->rowCount(); i++)
+  {
+    const uint8_t contentByte = (static_cast<int>(content.size()) > i) ? content.at(i) : 0;
+    QTableWidgetItem* item = ui->snapshotDataTable->item(i, 0);
+    item->setText(QString("0x%1").arg(contentByte, 2, 16, QChar('0')));
+  }
+}
+
+void SimMain::on_snapshotSetButton_clicked()
+{
+  std::vector<uint8_t> content;
+  for (int i = 0; i < ui->snapshotDataTable->rowCount(); i++)
+  {
+    content.push_back(ui->snapshotDataTable->item(i, 0)->text().toInt(nullptr, 0));
+  }
+  m_sim.setSnapshotContent(ui->snapshotNumberBox->value(), content);
 }
 

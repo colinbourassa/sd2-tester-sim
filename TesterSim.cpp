@@ -573,7 +573,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else if (blockTitle == 0x31)
   {
-    const uint8_t valueCode = hasVerbosePayload ? outbuf[10] : outbuf[8];
+    const uint8_t valueCode = hasVerbosePayload ? inbuf[10] : inbuf[8];
 
     outbuf[2] = 13;
     outbuf[7] = 1;
@@ -587,23 +587,19 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else if (blockTitle == 0x32) // request for snapshot
   {
+    const uint8_t snapshotIndex = hasVerbosePayload ? inbuf[10] : inbuf[8];
+
     outbuf[2] = 21; // bytecount in the SD2 frame (including the ending checksum)
     outbuf[7] = 1;
     outbuf[8] = 13; // bytecount in the 1AF frame; pg. 28 of FIAT 3.00601 Marelli 1AF document seems to have an error here
-    // TODO: Need to be able to change the snapshot content via the GUI
-    // TODO: Also need to determine whether this snapshot size is the same in
+    // TODO: Need to determine whether this snapshot size is the same in
     // the "official" protocol implementation and the Ferrari/Marelli TCU version
     outbuf[9] = 0xCD; // reply title
-    outbuf[10] = 0x00;
-    outbuf[11] = 0x00;
-    outbuf[12] = 0x00;
-    outbuf[13] = 0x00;
-    outbuf[14] = 0x00;
-    outbuf[15] = 0x00;
-    outbuf[16] = 0x00;
-    outbuf[17] = 0x00;
-    outbuf[18] = 0x00;
-    outbuf[19] = 0x00;
+
+    for (unsigned int i = 0; i < 10; i++)
+    {
+      outbuf[10 + i] = sim->m_snapshotData[snapshotIndex][i];
+    }
     sim->add16BitChecksum(&outbuf[8]);
   }
   else
@@ -973,5 +969,15 @@ bool TesterSim::saveState(const QString& filename)
 void TesterSim::log(const QString& line)
 {
   emit logMsg(line);
+}
+
+const std::vector<uint8_t>& TesterSim::getSnapshotContent(int snapshotIndex)
+{
+  return m_snapshotData[snapshotIndex];
+}
+
+void TesterSim::setSnapshotContent(int snapshotIndex, const std::vector<uint8_t>& content)
+{
+  m_snapshotData[snapshotIndex] = content;
 }
 

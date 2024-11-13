@@ -27,6 +27,8 @@ private slots:
   void onLogMsg(const QString& line);
   void onLastLogMsgRepeated();
   void onConsecutiveWriteToFile();
+  void on_snapshotNumberBox_valueChanged(int arg1);
+  void on_snapshotSetButton_clicked();
 
 private:
   Ui::SimMain *ui;
@@ -35,5 +37,6 @@ private:
   bool m_heartbeatBarIncreasing = true;
   static void listenOnSock(SimMain* sim);
   void log(const QString& line);
+  void updateSnapshotDisplay(int snapshotIndex);
 };
 #endif // SIMMAIN_H

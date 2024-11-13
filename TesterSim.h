@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <QMap>
 #include <QObject>
 #include <QString>
@@ -35,6 +36,8 @@ public:
   void setRAMLoc(uint16_t addr, uint16_t val);
   bool loadState(const QString& filename);
   bool saveState(const QString& filename);
+  const std::vector<uint8_t>& getSnapshotContent(int snapshotIndex);
+  void setSnapshotContent(int snapshotIndex, const std::vector<uint8_t>& content);
 
 signals:
   void logMsg(const QString& line);
@@ -55,6 +58,10 @@ private:
   int m_currentECUID = 0;
   bool m_lastCmdWasWriteToFile = false;
   std::unordered_map<uint16_t,uint16_t> m_ramData;
+  std::map<int,std::vector<uint8_t>> m_snapshotData =
+  {
+    { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
+  };
 
   QMap<QString,QMap<QString,QVector<quint8>>> m_fileContents;
   QMap<QString,QVector<quint8>>::Iterator m_curDirIterator;
