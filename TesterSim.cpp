@@ -565,16 +565,33 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[23] = 0xAA; // ID info block terminator
     sim->add8BitChecksum(&outbuf[8]);
   }
-  else if (blockTitle == 0x20) // activate actuator
+  else if ((blockTitle == 0x20) || (blockTitle == 0x21)) // activate actuator / stop actuation
   {
-    outbuf[2] = 7;
+    outbuf[2] = 11;
     outbuf[7] = 1;
-    // TODO
+    outbuf[8] = 3;
+    outbuf[9] = 0x09;
+    sim->add16BitChecksum(&outbuf[8]);
   }
-  else if (blockTitle == 0x31)
+  else if (blockTitle == 0x30) // read RAM/ROM/EEPROM
   {
-    // This is actually distinct from raw RAM reading so we should handle is separately.
+    const uint16_t startAddr = hasVerbosePayload ?
+      (static_cast<uint16_t>(inbuf[10] << 8) | (inbuf[11] & 0xff)) :
+      (static_cast<uint16_t>(inbuf[8] << 8) | (inbuf[9] & 0xff));
+    const uint8_t numBytes = hasVerbosePayload ? inbuf[12] : inbuf[10];
 
+    outbuf[2] = 11 + numBytes;
+    outbuf[7] = 1;
+    outbuf[8] = 3 + numBytes;
+    outbuf[9] = 0xCF;
+    for (uint16_t addr = startAddr; addr < (startAddr + numBytes); addr++)
+    {
+      outbuf[10 + addr] = (sim->m_ramData[addr] & 0xff);
+    }
+    sim->add16BitChecksum(&outbuf[8]);
+  }
+  else if (blockTitle == 0x31) // read value
+  {
     const uint8_t valueCode = hasVerbosePayload ? inbuf[10] : inbuf[8];
 
     outbuf[2] = 15;
@@ -582,12 +599,14 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[8] = 7;    // bytecount
     outbuf[9] = 0xCE; // reply title
 
-    // TODO/experimental: it looks like the win32 software is expecting more bytes
-    // in the response to cmd 0x31; let's just pad out to 32 bits with zeroes:
+    // It looks like the WSDC32 software is expecting more bytes in the response
+    // to cmd 0x31; let's just pad out to 32 bits with zeroes:
     outbuf[10] = 0;
     outbuf[11] = 0;
     outbuf[12] = sim->m_ramData[valueCode] >> 8;
     outbuf[13] = sim->m_ramData[valueCode] & 0xff;
+    // TODO: This is technically not the same as generic RAM/ROM access, so
+    // we should have a separate "value" data store (i.e. not m_ramData).
 
     sim->add16BitChecksum(&outbuf[8]);
   }
@@ -603,8 +622,6 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[2] = 11 + numBytesInSnapshot; // bytecount in the SD2 frame (including the ending checksum)
     outbuf[7] = 1;
     outbuf[8] = 3 + numBytesInSnapshot; // bytecount in the 1AF frame; pg. 28 of FIAT 3.00601 Marelli 1AF document seems to have an error here
-    // TODO: Need to determine whether this snapshot size is the same in
-    // the "official" protocol implementation and the Ferrari/Marelli TCU version
     outbuf[9] = 0xCD; // reply title
 
     for (unsigned int i = 0; i < numBytesInSnapshot; i++)
