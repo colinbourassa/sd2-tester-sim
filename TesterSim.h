@@ -9,6 +9,7 @@
 #include <QString>
 
 constexpr int CHKSUM_BUF_SIZE = 110;
+constexpr int DEFAULT_SNAPSHOT_SIZE = 16;
 
 enum class ProtocolType
 {
@@ -73,8 +74,6 @@ private:
   void chdir(const std::string& dir);
   void addToFile(const std::string& name, int numBytes);
   void emitConsecutiveWriteToFileSignal();
-  void add8BitChecksum(uint8_t* frame) const;
-  void add16BitChecksum(uint8_t* frame) const;
 
   static std::map<uint8_t,std::function<void(const uint8_t*,uint8_t*,TesterSim*)>> s_commandProcs;
   static const std::unordered_map<int,ProtocolType> s_protocols;

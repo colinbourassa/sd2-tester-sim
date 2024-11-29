@@ -8,7 +8,7 @@
 #include <chrono>
 #include <thread>
 #include "TesterSim.h"
-
+#include "utilities.h"
 #include <QFile>
 #include <QDataStream>
 #include <QFileInfo>
@@ -563,7 +563,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[21] = 0x01; // SW release month in BCD
     outbuf[22] = 0x02; // SW release day in BCD
     outbuf[23] = 0xAA; // ID info block terminator
-    sim->add8BitChecksum(&outbuf[8]);
+    add8BitChecksum(&outbuf[8]);
   }
   else if ((blockTitle == 0x20) || (blockTitle == 0x21)) // activate actuator / stop actuation
   {
@@ -571,7 +571,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[7] = 1;
     outbuf[8] = 3;
     outbuf[9] = 0x09;
-    sim->add16BitChecksum(&outbuf[8]);
+    add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x30) // read RAM/ROM/EEPROM
   {
@@ -588,7 +588,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     {
       outbuf[10 + addr] = (sim->m_ramData[addr] & 0xff);
     }
-    sim->add16BitChecksum(&outbuf[8]);
+    add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x31) // read value
   {
@@ -608,15 +608,20 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     // TODO: This is technically not the same as generic RAM/ROM access, so
     // we should have a separate "value" data store (i.e. not m_ramData).
 
-    sim->add16BitChecksum(&outbuf[8]);
+    add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x32) // request for snapshot
   {
     const uint8_t snapshotIndex = hasVerbosePayload ? inbuf[10] : inbuf[8];
-    if (sim->m_snapshotData[snapshotIndex].size() < 10)
+
+    // If we get a request for snapshot data on a page that hasn't yet been
+    // explicitly populated by the GUI, resize it to the minimum page size
+    // that we want to use so that WSDC32 isn't reading uninitialized memory.
+    if (sim->m_snapshotData[snapshotIndex].size() < DEFAULT_SNAPSHOT_SIZE)
     {
-      sim->m_snapshotData[snapshotIndex].resize(10, 0);
+      sim->m_snapshotData[snapshotIndex].resize(DEFAULT_SNAPSHOT_SIZE, 0);
     }
+
     const uint8_t numBytesInSnapshot = sim->m_snapshotData[snapshotIndex].size();
 
     outbuf[2] = 11 + numBytesInSnapshot; // bytecount in the SD2 frame (including the ending checksum)
@@ -628,7 +633,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     {
       outbuf[10 + i] = sim->m_snapshotData[snapshotIndex][i];
     }
-    sim->add16BitChecksum(&outbuf[8]);
+    add16BitChecksum(&outbuf[8]);
   }
   else
   {
@@ -637,53 +642,6 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[7] = 1;
   }
 }
-
-/**
- * Computes a 16-bit checksum by iterating over the contents of a frame, using
- * the value of the first byte to determine the total number of bytes in the
- * frame. The bytecount value does not count itself, but does count the two
- * bytes of the checksum, e.g:
- *  [00] 05 // number of bytes to follow
- *  [01] 01 // sample block title
- *  [02] 07 // sample data byte A
- *  [03] 08 // sample data byte B
- *  [04] 00 // checksum high byte
- *  [05] 15 // checksum lo byte
- */
-void TesterSim::add16BitChecksum(uint8_t* frame) const
-{
-  const uint8_t bytecount = frame[0];
-  uint16_t checksum = 0;
-  for (uint8_t i = 0; i < (bytecount - 1); i++)
-  {
-    checksum += frame[i];
-  }
-  frame[bytecount - 1] = (checksum >> 8);
-  frame[bytecount] = checksum & 0xff;
-}
-
-/**
- * Computes a 8-bit checksum by iterating over the contents of a frame, using
- * the value of the first byte to determine the total number of bytes in the
- * frame. The bytecount value does not count itself, but does count the single
- * byte of the checksum, e.g:
- *  [00] 04 // number of bytes to follow
- *  [01] 01 // sample block title
- *  [02] 07 // sample data byte A
- *  [03] 08 // sample data byte B
- *  [04] 14 // checksum
- */
-void TesterSim::add8BitChecksum(uint8_t* frame) const
-{
-  const uint8_t bytecount = frame[0];
-  uint8_t checksum = 0;
-  for (uint8_t i = 0; i < (bytecount - 1); i++)
-  {
-    checksum += frame[i];
-  }
-  frame[bytecount] = checksum;
-}
-
 
 /**
  * When commands 52 FE 01 and 52 FF 01 are sent to the ECU, the bytes in the

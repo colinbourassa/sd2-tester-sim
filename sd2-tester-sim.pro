@@ -12,11 +12,13 @@ SOURCES += \
     TesterSim.cpp \
     TesterSimModuleInfo.cpp \
     main.cpp \
-    simmain.cpp
+    simmain.cpp \
+    utilities.cpp
 
 HEADERS += \
     TesterSim.h \
-    simmain.h
+    simmain.h \
+    utilities.h
 
 FORMS += \
     simmain.ui

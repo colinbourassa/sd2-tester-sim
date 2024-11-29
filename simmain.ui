@@ -265,26 +265,6 @@
         <string>15</string>
        </property>
       </row>
-      <row>
-       <property name="text">
-        <string>16</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>17</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>18</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>19</string>
-       </property>
-      </row>
       <column>
        <property name="text">
         <string>Value</string>
@@ -366,26 +346,6 @@
        </property>
       </item>
       <item row="15" column="0">
-       <property name="text">
-        <string>0x00</string>
-       </property>
-      </item>
-      <item row="16" column="0">
-       <property name="text">
-        <string>0x00</string>
-       </property>
-      </item>
-      <item row="17" column="0">
-       <property name="text">
-        <string>0x00</string>
-       </property>
-      </item>
-      <item row="18" column="0">
-       <property name="text">
-        <string>0x00</string>
-       </property>
-      </item>
-      <item row="19" column="0">
        <property name="text">
         <string>0x00</string>
        </property>
