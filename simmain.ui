@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>613</width>
-    <height>354</height>
+    <width>583</width>
+    <height>628</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,30 +15,10 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="2" colspan="2">
-     <widget class="QLineEdit" name="addrBox"/>
-    </item>
     <item row="2" column="0" colspan="8">
      <widget class="Line" name="line">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="7">
-     <widget class="QPushButton" name="saveStateButton">
-      <property name="text">
-       <string>Save filesystem state</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="5">
-     <widget class="QLineEdit" name="valBox"/>
-    </item>
-    <item row="3" column="4">
-     <widget class="QLabel" name="valLabel">
-      <property name="text">
-       <string>Val:</string>
       </property>
      </widget>
     </item>
@@ -52,10 +32,40 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="6">
-     <widget class="QPushButton" name="startListeningButton">
+    <item row="4" column="0">
+     <widget class="QLabel" name="snapshotLabel">
       <property name="text">
-       <string>Start listening</string>
+       <string>Snapshot:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="6">
+     <widget class="QPushButton" name="snapshotSetButton">
+      <property name="text">
+       <string>Set snapshot data</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" colspan="4">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="maximum">
+       <number>10</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="format">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QLabel" name="valLabel">
+      <property name="text">
+       <string>Val:</string>
       </property>
      </widget>
     </item>
@@ -69,6 +79,20 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="socketFileLabel">
+      <property name="text">
+       <string>Socket file:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="6">
+     <widget class="QPushButton" name="startListeningButton">
+      <property name="text">
+       <string>Start listening</string>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="6">
      <widget class="QPushButton" name="setRAMButton">
       <property name="text">
@@ -76,15 +100,21 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="6">
-     <widget class="QPushButton" name="loadStateButton">
+    <item row="1" column="7">
+     <widget class="QPushButton" name="saveStateButton">
       <property name="text">
-       <string>Load filesystem state</string>
+       <string>Save filesystem state</string>
       </property>
      </widget>
     </item>
     <item row="7" column="0" colspan="8">
      <widget class="QPlainTextEdit" name="logView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="font">
        <font>
         <family>Monospace</family>
@@ -104,16 +134,16 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="2" colspan="4">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="maximum">
-       <number>10</number>
-      </property>
-      <property name="value">
-       <number>0</number>
-      </property>
-      <property name="format">
-       <string/>
+    <item row="3" column="2" colspan="2">
+     <widget class="QLineEdit" name="addrBox"/>
+    </item>
+    <item row="3" column="5">
+     <widget class="QLineEdit" name="valBox"/>
+    </item>
+    <item row="1" column="6">
+     <widget class="QPushButton" name="loadStateButton">
+      <property name="text">
+       <string>Load filesystem state</string>
       </property>
      </widget>
     </item>
@@ -124,13 +154,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="socketFileLabel">
-      <property name="text">
-       <string>Socket file:</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
@@ -138,24 +161,14 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="6">
-     <widget class="QPushButton" name="snapshotSetButton">
-      <property name="text">
-       <string>Set snapshot data</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="snapshotLabel">
-      <property name="text">
-       <string>Snapshot:</string>
-      </property>
+    <item row="4" column="2" colspan="3">
+     <widget class="QSpinBox" name="snapshotNumberBox">
       <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
     </item>
-    <item row="4" column="5" rowspan="2">
+    <item row="4" column="5" rowspan="3">
      <widget class="QTableWidget" name="snapshotDataTable">
       <property name="horizontalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -214,7 +227,62 @@
       </row>
       <row>
        <property name="text">
+        <string>8</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
         <string>9</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>10</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>11</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>12</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>13</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>14</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>15</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>16</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>17</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>18</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>19</string>
        </property>
       </row>
       <column>
@@ -267,12 +335,74 @@
         <string>0x00</string>
        </property>
       </item>
+      <item row="9" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="10" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="11" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="12" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="13" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="14" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="15" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="16" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="17" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="18" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
+      <item row="19" column="0">
+       <property name="text">
+        <string>0x00</string>
+       </property>
+      </item>
      </widget>
     </item>
-    <item row="4" column="2" colspan="3">
-     <widget class="QSpinBox" name="snapshotNumberBox">
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    <item row="6" column="6">
+     <widget class="QPushButton" name="snapshotAddButton">
+      <property name="text">
+       <string>Add byte</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="7">
+     <widget class="QPushButton" name="snapshotRemoveButton">
+      <property name="text">
+       <string>Remove byte</string>
       </property>
      </widget>
     </item>

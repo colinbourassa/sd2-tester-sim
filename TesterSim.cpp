@@ -76,7 +76,7 @@ bool TesterSim::sendReply(bool print)
   bool status = true;
   if (m_outbuf[2] != 0)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
 
     // Although m_outbuf[1] should contain the hi byte
     // of a 16-bit byte count, it seems that neither the
@@ -573,30 +573,41 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else if (blockTitle == 0x31)
   {
+    // This is actually distinct from raw RAM reading so we should handle is separately.
+
     const uint8_t valueCode = hasVerbosePayload ? inbuf[10] : inbuf[8];
 
-    outbuf[2] = 13;
+    outbuf[2] = 15;
     outbuf[7] = 1;
-    outbuf[8] = 5;    // bytecount
+    outbuf[8] = 7;    // bytecount
     outbuf[9] = 0xCE; // reply title
-    // Note that this is not entirely authentic; some value codes may return in a single byte,
-    // while others occupy two bytes that are taken together as a 16-bit value
-    outbuf[10] = sim->m_ramData[valueCode] >> 8;
-    outbuf[11] = sim->m_ramData[valueCode] & 0xff;
+
+    // TODO/experimental: it looks like the win32 software is expecting more bytes
+    // in the response to cmd 0x31; let's just pad out to 32 bits with zeroes:
+    outbuf[10] = 0;
+    outbuf[11] = 0;
+    outbuf[12] = sim->m_ramData[valueCode] >> 8;
+    outbuf[13] = sim->m_ramData[valueCode] & 0xff;
+
     sim->add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x32) // request for snapshot
   {
     const uint8_t snapshotIndex = hasVerbosePayload ? inbuf[10] : inbuf[8];
+    if (sim->m_snapshotData[snapshotIndex].size() < 10)
+    {
+      sim->m_snapshotData[snapshotIndex].resize(10, 0);
+    }
+    const uint8_t numBytesInSnapshot = sim->m_snapshotData[snapshotIndex].size();
 
-    outbuf[2] = 21; // bytecount in the SD2 frame (including the ending checksum)
+    outbuf[2] = 11 + numBytesInSnapshot; // bytecount in the SD2 frame (including the ending checksum)
     outbuf[7] = 1;
-    outbuf[8] = 13; // bytecount in the 1AF frame; pg. 28 of FIAT 3.00601 Marelli 1AF document seems to have an error here
+    outbuf[8] = 3 + numBytesInSnapshot; // bytecount in the 1AF frame; pg. 28 of FIAT 3.00601 Marelli 1AF document seems to have an error here
     // TODO: Need to determine whether this snapshot size is the same in
     // the "official" protocol implementation and the Ferrari/Marelli TCU version
     outbuf[9] = 0xCD; // reply title
 
-    for (unsigned int i = 0; i < 10; i++)
+    for (unsigned int i = 0; i < numBytesInSnapshot; i++)
     {
       outbuf[10 + i] = sim->m_snapshotData[snapshotIndex][i];
     }
@@ -979,5 +990,6 @@ const std::vector<uint8_t>& TesterSim::getSnapshotContent(int snapshotIndex)
 void TesterSim::setSnapshotContent(int snapshotIndex, const std::vector<uint8_t>& content)
 {
   m_snapshotData[snapshotIndex] = content;
+  emit logMsg(QString("Set snapshot data with %1 bytes").arg(content.size()));
 }
 

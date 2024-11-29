@@ -58,10 +58,7 @@ private:
   int m_currentECUID = 0;
   bool m_lastCmdWasWriteToFile = false;
   std::unordered_map<uint16_t,uint16_t> m_ramData;
-  std::map<int,std::vector<uint8_t>> m_snapshotData =
-  {
-    { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
-  };
+  std::map<int,std::vector<uint8_t>> m_snapshotData;
 
   QMap<QString,QMap<QString,QVector<quint8>>> m_fileContents;
   QMap<QString,QVector<quint8>>::Iterator m_curDirIterator;

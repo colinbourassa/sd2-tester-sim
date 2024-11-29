@@ -29,6 +29,8 @@ private slots:
   void onConsecutiveWriteToFile();
   void on_snapshotNumberBox_valueChanged(int arg1);
   void on_snapshotSetButton_clicked();
+  void on_snapshotAddButton_clicked();
+  void on_snapshotRemoveButton_clicked();
 
 private:
   Ui::SimMain *ui;

@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <vector>
 #include "ui_simmain.h"
+#include <iostream>
 
 SimMain::SimMain(const QString& domainSockName, QWidget* parent)
   : QMainWindow(parent)
@@ -123,6 +124,7 @@ void SimMain::log(const QString& line)
   const double secs = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() / 1000.0;
   const QString formattedLine = QString("[%1] %2").arg(secs, 0, 'f', 3).arg(line);
   ui->logView->appendPlainText(formattedLine);
+  std::cout << formattedLine.toStdString() << std::endl;
 }
 
 void SimMain::onLogMsg(const QString& line)
@@ -183,5 +185,21 @@ void SimMain::on_snapshotSetButton_clicked()
     content.push_back(ui->snapshotDataTable->item(i, 0)->text().toInt(nullptr, 0));
   }
   m_sim.setSnapshotContent(ui->snapshotNumberBox->value(), content);
+}
+
+void SimMain::on_snapshotAddButton_clicked()
+{
+  ui->snapshotDataTable->insertRow(ui->snapshotDataTable->rowCount());
+  ui->snapshotDataTable->setVerticalHeaderItem(
+    ui->snapshotDataTable->rowCount() - 1, new QTableWidgetItem(QString("%1").arg(ui->snapshotDataTable->rowCount() - 1)));
+  ui->snapshotDataTable->setItem(ui->snapshotDataTable->rowCount() - 1, 0, new QTableWidgetItem("0x00"));
+}
+
+void SimMain::on_snapshotRemoveButton_clicked()
+{
+  if (ui->snapshotDataTable->rowCount() > 1)
+  {
+    ui->snapshotDataTable->removeRow(ui->snapshotDataTable->rowCount() - 1);
+  }
 }
 
