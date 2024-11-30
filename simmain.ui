@@ -122,7 +122,7 @@
      </widget>
     </item>
     <item row="8" column="2" colspan="4">
-     <widget class="QLineEdit" name="valueBox"/>
+     <widget class="QLineEdit" name="valueValBox"/>
     </item>
     <item row="7" column="2" colspan="3">
      <widget class="QLineEdit" name="valueIDBox"/>
@@ -340,14 +340,14 @@
      </widget>
     </item>
     <item row="7" column="5">
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="valueSetButton">
       <property name="text">
        <string>Set value</string>
       </property>
      </widget>
     </item>
     <item row="6" column="2" colspan="4">
-     <widget class="QLineEdit" name="valBox"/>
+     <widget class="QLineEdit" name="ramValBox"/>
     </item>
     <item row="2" column="2" colspan="4">
      <widget class="QProgressBar" name="progressBar">
@@ -377,7 +377,7 @@
      </widget>
     </item>
     <item row="5" column="5">
-     <widget class="QPushButton" name="setRAMButton">
+     <widget class="QPushButton" name="ramSetButton">
       <property name="text">
        <string>Set RAM val</string>
       </property>
@@ -391,7 +391,7 @@
      </widget>
     </item>
     <item row="5" column="2" colspan="3">
-     <widget class="QLineEdit" name="addrBox"/>
+     <widget class="QLineEdit" name="ramAddrBox"/>
     </item>
     <item row="6" column="0">
      <widget class="QLabel" name="ramValLabel">
@@ -417,7 +417,7 @@
   <tabstop>domainSocketLine</tabstop>
   <tabstop>startListeningButton</tabstop>
   <tabstop>saveStateButton</tabstop>
-  <tabstop>addrBox</tabstop>
+  <tabstop>ramAddrBox</tabstop>
   <tabstop>logView</tabstop>
  </tabstops>
  <resources/>

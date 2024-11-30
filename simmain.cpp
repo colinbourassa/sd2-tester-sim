@@ -61,12 +61,14 @@ void SimMain::on_stopListeningButton_clicked()
   ui->stopListeningButton->setEnabled(false);
 }
 
-void SimMain::on_setRAMButton_clicked()
+void SimMain::on_ramSetButton_clicked()
 {
   bool addrOk = false;
   bool valOk = false;
-  const uint16_t addr = ui->addrBox->text().toUInt(&addrOk, 0);
-  const uint16_t val = ui->valBox->text().toUInt(&valOk, 0);
+  const uint16_t addr = ui->ramAddrBox->text().toUInt(&addrOk, 0);
+  // TODO: this should probably be an 8-bit value now that we've separated
+  // the "value" responses from the RAM/ROM responses
+  const uint16_t val = ui->ramValBox->text().toUInt(&valOk, 0);
   if (addrOk && valOk)
   {
     m_sim.setRAMLoc(addr, val);
@@ -75,6 +77,24 @@ void SimMain::on_setRAMButton_clicked()
   else
   {
     log(QString("Error parsing RAM address and/or value input box."));
+  }
+}
+
+void SimMain::on_valueSetButton_clicked()
+{
+  bool idOk = false;
+  bool valOk = false;
+  const uint16_t id = ui->valueIDBox->text().toUInt(&idOk, 0);
+  const uint16_t val = ui->valueValBox->text().toUInt(&valOk, 0);
+
+  if (idOk && valOk)
+  {
+    m_sim.setValue(id, val);
+    log(QString("Set sampled value %1 to %2.").arg(id, 4, 16, QChar('0')).arg(val, 2, 16, QChar('0')));
+  }
+  else
+  {
+    log(QString("Error parsing value ID and/or value input box."));
   }
 }
 
@@ -202,4 +222,3 @@ void SimMain::on_snapshotRemoveButton_clicked()
     ui->snapshotDataTable->removeRow(ui->snapshotDataTable->rowCount() - 1);
   }
 }
-

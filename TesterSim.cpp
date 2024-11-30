@@ -50,9 +50,16 @@ TesterSim::TesterSim(QObject* parent) : QObject(parent)
   }
 }
 
+// TODO: change signature to use 16-bit addresses but 8-bit values.
+// This is probably possible now.
 void TesterSim::setRAMLoc(uint16_t addr, uint16_t val)
 {
   m_ramData[addr] = val;
+}
+
+void TesterSim::setValue(uint16_t id, uint16_t val)
+{
+  m_valueData[id] = val;
 }
 
 int TesterSim::readBytes(uint8_t* buf, int count)
@@ -598,16 +605,10 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[7] = 1;
     outbuf[8] = 7;    // bytecount
     outbuf[9] = 0xCE; // reply title
-
-    // It looks like the WSDC32 software is expecting more bytes in the response
-    // to cmd 0x31; let's just pad out to 32 bits with zeroes:
-    outbuf[10] = 0;
-    outbuf[11] = 0;
-    outbuf[12] = sim->m_ramData[valueCode] >> 8;
-    outbuf[13] = sim->m_ramData[valueCode] & 0xff;
-    // TODO: This is technically not the same as generic RAM/ROM access, so
-    // we should have a separate "value" data store (i.e. not m_ramData).
-
+    outbuf[10] = sim->m_valueData[valueCode] >> 24;
+    outbuf[11] = sim->m_valueData[valueCode] >> 16;
+    outbuf[12] = sim->m_valueData[valueCode] >> 8;
+    outbuf[13] = sim->m_valueData[valueCode] & 0xff;
     add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x32) // request for snapshot
@@ -616,7 +617,8 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
 
     // If we get a request for snapshot data on a page that hasn't yet been
     // explicitly populated by the GUI, resize it to the minimum page size
-    // that we want to use so that WSDC32 isn't reading uninitialized memory.
+    // that we don't sent a short page that would cause WSDC32 to read
+    // uninitialized memory.
     if (sim->m_snapshotData[snapshotIndex].size() < DEFAULT_SNAPSHOT_SIZE)
     {
       sim->m_snapshotData[snapshotIndex].resize(DEFAULT_SNAPSHOT_SIZE, 0);

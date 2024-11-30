@@ -21,7 +21,6 @@ public:
 private slots:
   void on_startListeningButton_clicked();
   void on_stopListeningButton_clicked();
-  void on_setRAMButton_clicked();
   void on_loadStateButton_clicked();
   void on_saveStateButton_clicked();
   void onLogMsg(const QString& line);
@@ -31,6 +30,8 @@ private slots:
   void on_snapshotSetButton_clicked();
   void on_snapshotAddButton_clicked();
   void on_snapshotRemoveButton_clicked();
+  void on_ramSetButton_clicked();
+  void on_valueSetButton_clicked();
 
 private:
   Ui::SimMain *ui;
