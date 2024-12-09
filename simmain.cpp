@@ -222,3 +222,4 @@ void SimMain::on_snapshotRemoveButton_clicked()
     ui->snapshotDataTable->removeRow(ui->snapshotDataTable->rowCount() - 1);
   }
 }
+

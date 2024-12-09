@@ -449,6 +449,12 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
   }
 }
 
+/**
+ * Parses a KWP-71 protocol block in the input buffer, and produces an
+ * appropriate KWP-71 response in the output buffer. Certain bytes may be
+ * omitted from the input block due to SD2 framing; this is indicated by the
+ * state of the hasVerbosePayload flag.
+ */
 void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
   const uint8_t blockTitle = hasVerbosePayload ? inbuf[10] : inbuf[7];
@@ -502,6 +508,12 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   }
 }
 
+/**
+ * Parses a FIAT-9141 protocol block in the input buffer, and produces an
+ * appropriate FIAT-9141 response in the output buffer. Certain bytes may be
+ * omitted from the input block due to SD2 framing; this is indicated by the
+ * state of the hasVerbosePayload flag.
+ */
 void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
   const uint8_t blockTitle = hasVerbosePayload ? inbuf[9] : inbuf[7];
@@ -544,6 +556,12 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
   }
 }
 
+/**
+ * Parses a Marelli 1AF protocol block in the input buffer, and produces an
+ * appropriate 1AF response in the output buffer. Certain bytes may be omitted
+ * from the input block due to SD2 framing; this is indicated by the state of
+ * the hasVerbosePayload flag.
+ */
 void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload)
 {
   const uint8_t blockTitle = hasVerbosePayload ? inbuf[9] : inbuf[7];
