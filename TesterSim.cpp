@@ -50,14 +50,12 @@ TesterSim::TesterSim(QObject* parent) : QObject(parent)
   }
 }
 
-// TODO: change signature to use 16-bit addresses but 8-bit values.
-// This is probably possible now.
-void TesterSim::setRAMLoc(uint16_t addr, uint16_t val)
+void TesterSim::setRAMLoc(uint16_t addr, uint8_t val)
 {
   m_ramData[addr] = val;
 }
 
-void TesterSim::setValue(uint16_t id, uint16_t val)
+void TesterSim::setValue(uint16_t id, uint32_t val)
 {
   m_valueData[id] = val;
 }
@@ -611,7 +609,7 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[9] = 0xCF;
     for (uint16_t addr = startAddr; addr < (startAddr + numBytes); addr++)
     {
-      outbuf[10 + addr] = (sim->m_ramData[addr] & 0xff);
+      outbuf[10 + addr] = sim->m_ramData[addr];
     }
     add16BitChecksum(&outbuf[8]);
   }

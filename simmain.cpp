@@ -84,8 +84,8 @@ void SimMain::on_valueSetButton_clicked()
 {
   bool idOk = false;
   bool valOk = false;
-  const uint16_t id = ui->valueIDBox->text().toUInt(&idOk, 0);
-  const uint16_t val = ui->valueValBox->text().toUInt(&valOk, 0);
+  const uint8_t id = ui->valueIDBox->text().toUInt(&idOk, 0);
+  const uint32_t val = ui->valueValBox->text().toUInt(&valOk, 0);
 
   if (idOk && valOk)
   {
