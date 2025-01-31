@@ -1,3 +1,9 @@
+== BSOS0088 / BSOS0108 / BSOS0109 / BSOS0143 / BSOS0144 ==
+
+Uses 5-baud slow init. 0088 and 0144 (and possibly others) are using ECU address 00.
+Messages are at least 5 bytes. Idle message may be: 0A 00 00 00 0A
+Request for ECU info: 01 00 23 00 22
+
 == MCAM0151 ==
 TODO: It seems that some of these requests expect a multi-byte value in response,
 while some of them expect only a single byte.
