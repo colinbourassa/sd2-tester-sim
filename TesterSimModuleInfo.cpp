@@ -5,6 +5,7 @@ const std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
   {  83, ProtocolType::FIAT9141 },
   {  84, ProtocolType::Marelli1AF },
   {  86, ProtocolType::BoschAlarm },
+  {  88, ProtocolType::BilsteinSuspension },
   {  89, ProtocolType::FIAT9141 },
   {  90, ProtocolType::KWP71 },
   {  96, ProtocolType::KWP71 },

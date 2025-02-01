@@ -440,6 +440,10 @@ void TesterSim::process13CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, Tes
     {
       processBoschAlarmCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
     }
+    else if (proto == ProtocolType::BilsteinSuspension)
+    {
+      processBilsteinSuspensionCommandToECU(inbuf, outbuf, sim, hasVerbosePayload);
+    }
   }
   else
   {
@@ -690,7 +694,7 @@ void TesterSim::processBoschAlarmCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else if (inbuf[8] == 0x44)
   {
-    // This is another type of Read command -- possible from a different address space or device?
+    // This is another type of Read command -- possibly from a different address space or device?
     // Unlike cmd 52h, it is followed by only a single byte (which must be an 8-bit address.)
     const uint8_t commNumber = inbuf[9];
     if (sim->m_ramData.count(commNumber) == 0)
@@ -704,6 +708,50 @@ void TesterSim::processBoschAlarmCommandToECU(const uint8_t* inbuf, uint8_t* out
   else
   {
     sim->log("Warning: unhandled Bosch Alarm command");
+  }
+}
+
+/**
+ */
+void TesterSim::processBilsteinSuspensionCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool /*hasVerbosePayload*/)
+{
+  // A typical command looks like: (... 13 01) 01 00 23 00 22
+
+  // Is this attempting to read a location in ECU memory?
+  if (inbuf[8] == 0x01)
+  {
+    const uint8_t addrHi = inbuf[9];
+    const uint8_t addrLo = inbuf[10];
+    const uint16_t addr = ((uint16_t)addrHi << 8) | addrLo;
+
+    if (sim->m_ramData.count(addr) == 0)
+    {
+      sim->m_ramData[addr] = 0;
+    }
+
+    outbuf[2] = 12; // Total byte count for the SD2 Tester msg (should match the index of the last byte)
+    outbuf[7] = 1;  // Indication of success. Note that this byte overwrites a byte *count* that we
+                    // received from WSDC32 (where it would have been 05 for the 5-byte message that follows)
+    outbuf[8] = 0x01;
+    outbuf[9] = addrHi;
+    outbuf[10] = addrLo;
+    outbuf[11] = sim->m_ramData[addr];
+    outbuf[12] = (outbuf[8] ^ outbuf[9] ^ outbuf[10] ^ outbuf[11]);
+  }
+  else if (inbuf[8] == 0x06) // typeic
+  {
+    outbuf[2] = 12; // total byte count for the SD2 Tester msg (should match the index of the last byte)
+    outbuf[7] = 1;  // Indication of success. Note that this byte overwrites a byte *count* that we
+                    // received from WSDC32 (where it would have been 05 for the 5-byte message that follows)
+    outbuf[8] = 0x06;
+    outbuf[9] = 0;
+    outbuf[10] = 0;
+    outbuf[11] = 0;
+    outbuf[12] = (outbuf[8] ^ outbuf[9] ^ outbuf[10] ^ outbuf[11]);
+  }
+  else
+  {
+    sim->log("Warning: unhandled Bilstein suspension ECU command");
   }
 }
 

@@ -22,7 +22,8 @@ enum class ProtocolType
    * the Smartra III immobilizer, the spec for which was made available as
    * Appendix H in the user manual provided to the FCC (FCC ID: LXP-VIMA01).
    */
-  BoschAlarm
+  BoschAlarm,
+  BilsteinSuspension
 };
 
 class TesterSim : public QObject
@@ -107,5 +108,6 @@ private:
   static void processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
   static void processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
   static void processBoschAlarmCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
+  static void processBilsteinSuspensionCommandToECU(const uint8_t* inbuf, uint8_t* outbuf, TesterSim* sim, bool hasVerbosePayload);
 };
 
