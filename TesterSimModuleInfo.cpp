@@ -12,6 +12,7 @@ const std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
   { 100, ProtocolType::KWP71 },
   { 119, ProtocolType::KWP71 },
   { 121, ProtocolType::KWP71 },
+  { 144, ProtocolType::BilsteinSuspension },
   { 145, ProtocolType::KWP71 },
   { 146, ProtocolType::KWP71 },
   { 147, ProtocolType::KWP71 },

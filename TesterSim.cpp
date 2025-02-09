@@ -738,15 +738,41 @@ void TesterSim::processBilsteinSuspensionCommandToECU(const uint8_t* inbuf, uint
     outbuf[11] = sim->m_ramData[addr];
     outbuf[12] = (outbuf[8] ^ outbuf[9] ^ outbuf[10] ^ outbuf[11]);
   }
-  else if (inbuf[8] == 0x06) // typeic
+  else if (inbuf[8] == 0x06) // unknown
   {
+    const uint8_t addrHi = inbuf[9];
+    const uint8_t addrLo = inbuf[10];
+
     outbuf[2] = 12; // total byte count for the SD2 Tester msg (should match the index of the last byte)
     outbuf[7] = 1;  // Indication of success. Note that this byte overwrites a byte *count* that we
                     // received from WSDC32 (where it would have been 05 for the 5-byte message that follows)
     outbuf[8] = 0x06;
-    outbuf[9] = 0;
-    outbuf[10] = 0;
-    outbuf[11] = 0;
+    outbuf[9] = addrHi;
+    outbuf[10] = addrLo;
+    outbuf[11] = 7;
+    outbuf[12] = (outbuf[8] ^ outbuf[9] ^ outbuf[10] ^ outbuf[11]);
+  }
+  else if (inbuf[8] == 0x0B) // something to do with actuator activation
+  {
+    sim->log("Warning: Bilstein suspension ECU command for actuators not yet implemented");
+  }
+  else if (inbuf[8] == 0x11)
+  {
+    // This command seems to be requesting fault codes from a redundant memory location
+    // In addition to the faults being stored in normally addressable RAM locations
+    // (at least for BSOS0088), they seem to be stored -- with the same relative bit
+    // positions -- in data locations that are read with the command 0x11.
+
+    const uint8_t byteA = inbuf[9];
+    const uint8_t byteB = inbuf[10];
+
+    outbuf[2] = 12; // total byte count for the SD2 Tester msg (should match the index of the last byte)
+    outbuf[7] = 1;  // Indication of success. Note that this byte overwrites a byte *count* that we
+                    // received from WSDC32 (where it would have been 05 for the 5-byte message that follows)
+    outbuf[8] = 0x11;
+    outbuf[9] = byteA;
+    outbuf[10] = byteB;
+    outbuf[11] = sim->m_ramData[0x55 + byteB]; // NOTE: this works for BSOS0088, others may vary
     outbuf[12] = (outbuf[8] ^ outbuf[9] ^ outbuf[10] ^ outbuf[11]);
   }
   else
