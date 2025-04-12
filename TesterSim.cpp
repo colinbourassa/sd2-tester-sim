@@ -552,6 +552,7 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
   }
   else
   {
+    // TODO: Handle cmd 01 (set diagnostic mode) and 0x50 (read error memory)
     sim->log("Warning: unhandled FIAT9141 command");
     outbuf[2] = 7;
     outbuf[7] = 1;
