@@ -10,6 +10,7 @@
 
 constexpr int CHKSUM_BUF_SIZE = 110;
 constexpr int DEFAULT_SNAPSHOT_SIZE = 16;
+constexpr int DEFAULT_ERROR_MEMORY_SIZE = 16;
 
 enum class ProtocolType
 {
@@ -63,6 +64,7 @@ private:
   std::unordered_map<uint16_t,uint8_t> m_ramData;
   std::unordered_map<uint8_t,uint32_t> m_valueData;
   std::map<int,std::vector<uint8_t>> m_snapshotData;
+  std::vector<uint8_t> m_errorMemory;
 
   QMap<QString,QMap<QString,QVector<quint8>>> m_fileContents;
   QMap<QString,QVector<quint8>>::Iterator m_curDirIterator;

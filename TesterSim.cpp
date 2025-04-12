@@ -552,7 +552,6 @@ void TesterSim::processFIAT9141CommandToECU(const uint8_t* inbuf, uint8_t* outbu
   }
   else
   {
-    // TODO: Handle cmd 01 (set diagnostic mode) and 0x50 (read error memory)
     sim->log("Warning: unhandled FIAT9141 command");
     outbuf[2] = 7;
     outbuf[7] = 1;
@@ -599,6 +598,17 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     outbuf[7] = 1;
     outbuf[8] = 3;
     outbuf[9] = 0x09;
+    add16BitChecksum(&outbuf[8]);
+  }
+  else if (blockTitle == 0x01) // set diagnostic mode
+  {
+    const uint8_t diagnosticMode = hasVerbosePayload ? inbuf[10] : inbuf[8];
+    outbuf[2] = 13;
+    outbuf[7] = 1;
+    outbuf[8] = 5;
+    outbuf[9] = 0x0D;
+    outbuf[10] = diagnosticMode;
+    outbuf[11] = 0x00; // fixed at 00 according to page 40 of FIAT 3.00601 PDF
     add16BitChecksum(&outbuf[8]);
   }
   else if (blockTitle == 0x30) // read RAM/ROM/EEPROM
@@ -655,6 +665,26 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
     for (unsigned int i = 0; i < numBytesInSnapshot; i++)
     {
       outbuf[10 + i] = sim->m_snapshotData[snapshotIndex][i];
+    }
+    add16BitChecksum(&outbuf[8]);
+  }
+  else if (blockTitle == 0x50)
+  {
+    // TODO: GUI needs a mechanism to edit the error memory
+    if (sim->m_errorMemory.size() < DEFAULT_ERROR_MEMORY_SIZE)
+    {
+      sim->m_errorMemory.resize(DEFAULT_ERROR_MEMORY_SIZE, 0);
+    }
+    const uint8_t numBytesInErrorMem = sim->m_errorMemory.size();
+
+    outbuf[2] = 11 + numBytesInErrorMem; // bytecount in the SD2 frame (including the ending checksum)
+    outbuf[7] = 1;
+    outbuf[8] = 3 + numBytesInErrorMem; // bytecount in the 1AF frame
+    outbuf[9] = 0xAF; // reply title
+
+    for (unsigned int i = 0; i < numBytesInErrorMem; i++)
+    {
+      outbuf[10 + i] = sim->m_errorMemory[i];
     }
     add16BitChecksum(&outbuf[8]);
   }
