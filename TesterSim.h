@@ -42,6 +42,7 @@ public:
   bool saveState(const QString& filename);
   const std::vector<uint8_t>& getSnapshotContent(int snapshotIndex);
   void setSnapshotContent(int snapshotIndex, const std::vector<uint8_t>& content);
+  void setErrorMemoryContent(const std::vector<uint8_t>& content);
 
 signals:
   void logMsg(const QString& line);

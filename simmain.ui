@@ -15,10 +15,24 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0" colspan="9">
-     <widget class="Line" name="line">
+    <item row="0" column="2" colspan="4">
+     <widget class="QLineEdit" name="domainSocketLine">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0" colspan="8">
+     <widget class="Line" name="line_3">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="6" rowspan="4">
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
      </widget>
     </item>
@@ -29,24 +43,29 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="socketFileLabel">
-      <property name="text">
-       <string>Socket file:</string>
-      </property>
-     </widget>
+    <item row="6" column="2" colspan="4">
+     <widget class="QLineEdit" name="ramValBox"/>
     </item>
-    <item row="0" column="2" colspan="4">
-     <widget class="QLineEdit" name="domainSocketLine">
-      <property name="text">
+    <item row="2" column="2" colspan="4">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="maximum">
+       <number>10</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="format">
        <string/>
       </property>
      </widget>
     </item>
-    <item row="8" column="7">
-     <widget class="QPushButton" name="snapshotRemoveButton">
+    <item row="6" column="0">
+     <widget class="QLabel" name="ramValLabel">
       <property name="text">
-       <string>Remove byte</string>
+       <string>RAM val:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
     </item>
@@ -54,33 +73,6 @@
      <widget class="QLabel" name="valueIDLabel">
       <property name="text">
        <string>Value ID:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="7">
-     <widget class="QPushButton" name="snapshotAddButton">
-      <property name="text">
-       <string>Add byte</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="7">
-     <widget class="QLabel" name="snapshotLabel">
-      <property name="text">
-       <string>Snapshot:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="valueValLabel">
-      <property name="text">
-       <string>Value:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -97,6 +89,85 @@
       </property>
      </widget>
     </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="valueValLabel">
+      <property name="text">
+       <string>Value:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2" colspan="3">
+     <widget class="QLineEdit" name="ramAddrBox"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="heartbeatsLabel">
+      <property name="text">
+       <string>Heartbeats:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="5">
+     <widget class="QPushButton" name="valueSetButton">
+      <property name="text">
+       <string>Set value</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="7">
+     <widget class="QPushButton" name="snapshotRemoveButton">
+      <property name="text">
+       <string>Remove byte</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="0" rowspan="4" colspan="8">
+     <widget class="QPlainTextEdit" name="logView">
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+       </font>
+      </property>
+      <property name="undoRedoEnabled">
+       <bool>false</bool>
+      </property>
+      <property name="plainText">
+       <string notr="true"/>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+      </property>
+      <property name="maximumBlockCount">
+       <number>5000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="2" colspan="4">
+     <widget class="QLineEdit" name="valueValBox"/>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="socketFileLabel">
+      <property name="text">
+       <string>Socket file:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="5">
+     <widget class="QPushButton" name="ramSetButton">
+      <property name="text">
+       <string>Set RAM val</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="7">
+     <widget class="QPushButton" name="snapshotAddButton">
+      <property name="text">
+       <string>Add byte</string>
+      </property>
+     </widget>
+    </item>
     <item row="5" column="0">
      <widget class="QLabel" name="ramAddrLabel">
       <property name="text">
@@ -107,27 +178,34 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="8">
-     <widget class="QPushButton" name="loadStateButton">
-      <property name="text">
-       <string>Load filesystem</string>
+    <item row="6" column="8">
+     <widget class="QSpinBox" name="snapshotNumberBox">
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
-    </item>
-    <item row="5" column="6" rowspan="4">
-     <widget class="Line" name="line_2">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="2" colspan="4">
-     <widget class="QLineEdit" name="valueValBox"/>
     </item>
     <item row="7" column="2" colspan="3">
      <widget class="QLineEdit" name="valueIDBox"/>
     </item>
-    <item row="7" column="8" rowspan="7">
+    <item row="6" column="7">
+     <widget class="QLabel" name="snapshotLabel">
+      <property name="text">
+       <string>Snapshot:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="9">
+     <widget class="QPushButton" name="snapshotSetButton">
+      <property name="text">
+       <string>Set snapshot data</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="8" rowspan="7" colspan="2">
      <widget class="QTableWidget" name="snapshotDataTable">
       <property name="horizontalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -311,102 +389,31 @@
       </item>
      </widget>
     </item>
-    <item row="6" column="8">
-     <widget class="QSpinBox" name="snapshotNumberBox">
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="0" rowspan="4" colspan="8">
-     <widget class="QPlainTextEdit" name="logView">
-      <property name="font">
-       <font>
-        <family>Monospace</family>
-       </font>
-      </property>
-      <property name="undoRedoEnabled">
-       <bool>false</bool>
-      </property>
-      <property name="plainText">
-       <string notr="true"/>
-      </property>
-      <property name="textInteractionFlags">
-       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-      </property>
-      <property name="maximumBlockCount">
-       <number>5000</number>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="5">
-     <widget class="QPushButton" name="valueSetButton">
+    <item row="5" column="9">
+     <widget class="QPushButton" name="errorMemorySetButton">
       <property name="text">
-       <string>Set value</string>
+       <string>Set err memory</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="2" colspan="4">
-     <widget class="QLineEdit" name="ramValBox"/>
-    </item>
-    <item row="2" column="2" colspan="4">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="maximum">
-       <number>10</number>
-      </property>
-      <property name="value">
-       <number>0</number>
-      </property>
-      <property name="format">
-       <string/>
+    <item row="3" column="0" colspan="10">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="heartbeatsLabel">
+    <item row="0" column="8" colspan="2">
+     <widget class="QPushButton" name="loadStateButton">
       <property name="text">
-       <string>Heartbeats:</string>
+       <string>Load filesystem</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="8">
+    <item row="2" column="8" colspan="2">
      <widget class="QPushButton" name="saveStateButton">
       <property name="text">
        <string>Save filesystem</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="5">
-     <widget class="QPushButton" name="ramSetButton">
-      <property name="text">
-       <string>Set RAM val</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="8">
-     <widget class="QPushButton" name="snapshotSetButton">
-      <property name="text">
-       <string>Set snapshot data</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="2" colspan="3">
-     <widget class="QLineEdit" name="ramAddrBox"/>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="ramValLabel">
-      <property name="text">
-       <string>RAM val:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="0" colspan="8">
-     <widget class="Line" name="line_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>

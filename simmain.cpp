@@ -223,3 +223,13 @@ void SimMain::on_snapshotRemoveButton_clicked()
   }
 }
 
+void SimMain::on_errorMemorySetButton_clicked()
+{
+  std::vector<uint8_t> content;
+  for (int i = 0; i < ui->snapshotDataTable->rowCount(); i++)
+  {
+    content.push_back(ui->snapshotDataTable->item(i, 0)->text().toInt(nullptr, 0));
+  }
+  m_sim.setErrorMemoryContent(content);
+}
+

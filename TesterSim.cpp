@@ -1091,3 +1091,9 @@ void TesterSim::setSnapshotContent(int snapshotIndex, const std::vector<uint8_t>
   emit logMsg(QString("Set snapshot data with %1 bytes").arg(content.size()));
 }
 
+void TesterSim::setErrorMemoryContent(const std::vector<uint8_t>& content)
+{
+  m_errorMemory = content;
+  emit logMsg(QString("Set error memory with %1 bytes").arg(content.size()));
+}
+
