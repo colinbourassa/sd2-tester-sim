@@ -594,6 +594,13 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else if ((blockTitle == 0x20) || (blockTitle == 0x21)) // activate actuator / stop actuation
   {
+    if (blockTitle == 0x20)
+    {
+      const uint8_t actuatorID = hasVerbosePayload ? inbuf[10] : inbuf[8];
+      const uint8_t actuatorParam = hasVerbosePayload ? inbuf[11] : inbuf[9];
+      sim->log(QString("ACTUATOR: ID 0x%1, parameter 0x%2").arg(actuatorID, 2, 16, QChar('0')).arg(actuatorParam, 2, 16, QChar('0')));
+    }
+
     outbuf[2] = 11;
     outbuf[7] = 1;
     outbuf[8] = 3;
@@ -670,7 +677,6 @@ void TesterSim::processMarelli1AFCommandToECU(const uint8_t* inbuf, uint8_t* out
   }
   else if (blockTitle == 0x50)
   {
-    // TODO: GUI needs a mechanism to edit the error memory
     if (sim->m_errorMemory.size() < DEFAULT_ERROR_MEMORY_SIZE)
     {
       sim->m_errorMemory.resize(DEFAULT_ERROR_MEMORY_SIZE, 0);
