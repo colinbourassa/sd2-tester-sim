@@ -37,20 +37,6 @@ address space or device. The following commands apply to VIM172:
   bit 5: inclination sensor (0: not activated, 1: activated)
   bit 7: ignition (0: off, 1: on)
 
-=== SALZ0084 ===
-[1713916448.774] 54 00 0d 00 02 04 11 01 55 d6 83 01 15 c4
-[1713916448.775] 50 00 06 00 00 08 09
-[1713916448.794] 54 00 07 00 00 08 09 10
-[1713916448.814] 50 00 0c 00 02 04 13 00 04 51 00 00 55
-[1713916448.815] Warning: protocol for ECU ID 0084 is not known
-[1713916448.834] 54 00 0c 00 02 04 13 00 04 51 00 00 55
-[1713916448.977] 50 00 06 00 00 08 09
-[1713916448.997] 54 00 07 00 00 08 09 10
-This one looks like FIAT/Marelli 1AF, which we had already determined by looking
-at the code in the A.out .ecu file. The extra byte (value 00) after 13 and before
-the start of the ID info request (04 51 00 00 55) is a WSDC32 protocol status
-byte, and we should probably set it to 01 when replying from the simulator.
-
 
 === PCAP0095 ===
 [1713916594.012] 54 00 0d 00 02 04 11 01 55 d0 83 01 94 3d
@@ -61,6 +47,7 @@ byte, and we should probably set it to 01 when replying from the simulator.
 [1713916594.113] 54 00 0c 00 02 04 13 11 81 00 00 00 81
 [1713916594.331] 50 00 06 00 00 08 09
 [1713916594.351] 54 00 07 00 00 08 09 10
+
 
 === MCAM0151 ===
 Actuator IDs and params:
@@ -93,3 +80,4 @@ Actuator IDs and params:
     0D 01
     0E 00
     2A 00
+

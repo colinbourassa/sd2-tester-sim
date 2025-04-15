@@ -66,9 +66,7 @@ void SimMain::on_ramSetButton_clicked()
   bool addrOk = false;
   bool valOk = false;
   const uint16_t addr = ui->ramAddrBox->text().toUInt(&addrOk, 0);
-  // TODO: this should probably be an 8-bit value now that we've separated
-  // the "value" responses from the RAM/ROM responses
-  const uint16_t val = ui->ramValBox->text().toUInt(&valOk, 0);
+  const uint8_t val = ui->ramValBox->text().toUInt(&valOk, 0);
   if (addrOk && valOk)
   {
     m_sim.setRAMLoc(addr, val);

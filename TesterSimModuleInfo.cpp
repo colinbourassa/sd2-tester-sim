@@ -22,7 +22,7 @@ const std::unordered_map<int,ProtocolType> TesterSim::s_protocols =
   { 164, ProtocolType::KWP71 }
 };
 
-// TODO: Note that a number of these ISO keyword sequences have a bad checksum.
+// Note that a number of these ISO keyword sequences have a bad checksum.
 // They were pulled directly from the .Install files, so these bad checksums are
 // presumably errors in the original SD2 software. We should run some experiments
 // with sending the sequences with a repaired checksum, to see if that has any
