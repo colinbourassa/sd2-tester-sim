@@ -493,14 +493,22 @@ void TesterSim::processKWP71CommandToECU(const uint8_t* inbuf, uint8_t* outbuf, 
   }
   else if (blockTitle == 0x07) // read trouble codes
   {
-    outbuf[2] = 13;
+    // TODO: Determine the proper format and number of bytes in which the fault code
+    // data is returned. We're starting with an array fixed to five bytes because that
+    // appears to be what the F355 Motronic 5.2 is expecting (?)
+    if (sim->m_errorMemory.size() < 5)
+    {
+      sim->m_errorMemory.resize(5);
+    }
+    const uint8_t numFaultCodeBytes = sim->m_errorMemory.size();
+
+    outbuf[2] = 8 + numFaultCodeBytes;
     outbuf[7] = 1;
-    outbuf[8] = 5;
-    outbuf[9] = 0x00;
-    outbuf[10] = 0x00;
-    outbuf[11] = 0x00;
-    outbuf[12] = 0x00;
-    outbuf[13] = 0x00;
+    outbuf[8] = numFaultCodeBytes;
+    for (uint8_t errorBytePos = 0; errorBytePos < numFaultCodeBytes; errorBytePos++)
+    {
+      outbuf[9 + errorBytePos] = sim->m_errorMemory[errorBytePos];
+    }
   }
   else
   {

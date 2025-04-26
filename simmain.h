@@ -32,7 +32,6 @@ private slots:
   void on_snapshotRemoveButton_clicked();
   void on_ramSetButton_clicked();
   void on_valueSetButton_clicked();
-
   void on_errorMemorySetButton_clicked();
 
 private:
